@@ -98,7 +98,15 @@ export class FlightsService {
 
   async findAll(): Promise<Flight[]> {
     return await this.flightRepository.find({
-      relations: ['route', 'route.origin', 'route.destination', 'aircraft'],
+      relations: [
+        'route',
+        'route.origin',
+        'route.destination',
+        'aircraft',
+        'gate',
+        'gate.terminal',
+        'gate.terminal.airport',
+      ],
       order: { scheduledDepartureTime: 'ASC' },
     });
   }
@@ -113,6 +121,9 @@ export class FlightsService {
         'schedule',
         'aircraft',
         'aircraft.seatConfiguration',
+        'gate',
+        'gate.terminal',
+        'gate.terminal.airport',
       ],
     });
 
@@ -180,6 +191,9 @@ export class FlightsService {
       .leftJoinAndSelect('route.origin', 'origin')                  // Join origin airport of the route
       .leftJoinAndSelect('route.destination', 'destination')        // Join destination airport of the route
       .leftJoinAndSelect('flight.aircraft', 'aircraft')             // Join aircraft for this flight
+      .leftJoinAndSelect('flight.gate', 'gate')                     // Join gate for this flight
+      .leftJoinAndSelect('gate.terminal', 'terminal')               // Join terminal for the gate
+      .leftJoinAndSelect('terminal.airport', 'gateAirport')         // Join airport for the terminal
       .where('flight.routeId = :routeId', { routeId: route.id })    // Only flights for the found route
       .andWhere('DATE(flight.departureDate) = :departureDate', {
         departureDate: departureDate.split('T')[0], // Filter by departure date only (format: YYYY-MM-DD)
@@ -264,7 +278,14 @@ export class FlightsService {
   async getFlightsByStatus(status: FlightStatus): Promise<Flight[]> {
     return await this.flightRepository.find({
       where: { status },
-      relations: ['route', 'route.origin', 'route.destination'],
+      relations: [
+        'route',
+        'route.origin',
+        'route.destination',
+        'gate',
+        'gate.terminal',
+        'gate.terminal.airport',
+      ],
       order: { scheduledDepartureTime: 'ASC' },
     });
   }
@@ -279,7 +300,14 @@ export class FlightsService {
       where: {
         departureDate: Between(startOfDay, endOfDay),
       },
-      relations: ['route', 'route.origin', 'route.destination'],
+      relations: [
+        'route',
+        'route.origin',
+        'route.destination',
+        'gate',
+        'gate.terminal',
+        'gate.terminal.airport',
+      ],
       order: { scheduledDepartureTime: 'ASC' },
     });
   }
