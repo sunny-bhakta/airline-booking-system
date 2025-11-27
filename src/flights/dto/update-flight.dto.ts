@@ -1,0 +1,41 @@
+import { PartialType } from '@nestjs/mapped-types';
+import { CreateFlightDto } from './create-flight.dto';
+import {
+  IsEnum,
+  IsOptional,
+  IsDateString,
+  IsString,
+  IsInt,
+} from 'class-validator';
+import { FlightStatus } from '../entities/flight.entity';
+
+export class UpdateFlightDto extends PartialType(CreateFlightDto) {
+  @IsEnum(FlightStatus)
+  @IsOptional()
+  status?: FlightStatus;
+
+  @IsDateString()
+  @IsOptional()
+  actualDepartureTime?: string;
+
+  @IsDateString()
+  @IsOptional()
+  actualArrivalTime?: string;
+
+  @IsString()
+  @IsOptional()
+  gate?: string;
+
+  @IsString()
+  @IsOptional()
+  terminal?: string;
+
+  @IsInt()
+  @IsOptional()
+  availableSeats?: number;
+
+  @IsInt()
+  @IsOptional()
+  bookedSeats?: number;
+}
+

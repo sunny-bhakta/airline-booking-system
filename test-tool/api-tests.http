@@ -1,0 +1,65 @@
+### Airline Booking System API Tests
+### Use REST Client extension in VS Code or similar tool
+
+@baseUrl = http://localhost:3000
+@flightId = 
+@routeId = 
+@scheduleId = 
+@aircraftId = 
+
+### Get Welcome Message
+GET {{baseUrl}}/
+
+### Get All Flights
+GET {{baseUrl}}/flights
+
+### Search Flights
+GET {{baseUrl}}/flights/search?origin=JFK&destination=LAX&departureDate=2024-12-25&passengers=2&page=1&limit=10
+
+### Get Flight by ID
+GET {{baseUrl}}/flights/{{flightId}}
+
+### Get Flights by Status
+GET {{baseUrl}}/flights/status/scheduled
+
+### Get Flights by Date
+GET {{baseUrl}}/flights/date/2024-12-25
+
+### Create Flight
+POST {{baseUrl}}/flights
+Content-Type: application/json
+
+{
+  "flightNumber": "AA123",
+  "routeId": "{{routeId}}",
+  "scheduleId": "{{scheduleId}}",
+  "aircraftId": "{{aircraftId}}",
+  "departureDate": "2024-12-25",
+  "gate": "A12",
+  "terminal": "1",
+  "status": "scheduled"
+}
+
+### Update Flight
+PATCH {{baseUrl}}/flights/{{flightId}}
+Content-Type: application/json
+
+{
+  "gate": "B15",
+  "terminal": "2",
+  "status": "boarding",
+  "availableSeats": 150,
+  "bookedSeats": 50
+}
+
+### Update Flight Status
+PATCH {{baseUrl}}/flights/{{flightId}}/status
+Content-Type: application/json
+
+{
+  "status": "delayed"
+}
+
+### Delete Flight
+DELETE {{baseUrl}}/flights/{{flightId}}
+

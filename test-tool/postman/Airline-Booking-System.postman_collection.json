@@ -1,0 +1,343 @@
+{
+	"info": {
+		"_postman_id": "airline-booking-system",
+		"name": "Airline Booking System - Flight Management API",
+		"description": "Complete API collection for Flight Management endpoints",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "App",
+			"item": [
+				{
+					"name": "Get Hello",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								""
+							]
+						},
+						"description": "Get welcome message"
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Flights",
+			"item": [
+				{
+					"name": "Create Flight",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"if (pm.response.code === 201) {",
+									"    const response = pm.response.json();",
+									"    pm.environment.set('flightId', response.id);",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"flightNumber\": \"AA123\",\n  \"routeId\": \"{{routeId}}\",\n  \"scheduleId\": \"{{scheduleId}}\",\n  \"aircraftId\": \"{{aircraftId}}\",\n  \"departureDate\": \"2024-12-25\",\n  \"gate\": \"A12\",\n  \"terminal\": \"1\",\n  \"status\": \"scheduled\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/flights",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"flights"
+							]
+						},
+						"description": "Create a new flight. Requires routeId, scheduleId, and aircraftId to be set in environment variables."
+					},
+					"response": []
+				},
+				{
+					"name": "Get All Flights",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/flights",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"flights"
+							]
+						},
+						"description": "Retrieve all flights"
+					},
+					"response": []
+				},
+				{
+					"name": "Search Flights",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/flights/search?origin=JFK&destination=LAX&departureDate=2024-12-25&passengers=2&page=1&limit=10",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"flights",
+								"search"
+							],
+							"query": [
+								{
+									"key": "origin",
+									"value": "JFK",
+									"description": "Origin airport IATA code"
+								},
+								{
+									"key": "destination",
+									"value": "LAX",
+									"description": "Destination airport IATA code"
+								},
+								{
+									"key": "departureDate",
+									"value": "2024-12-25",
+									"description": "Departure date (YYYY-MM-DD)"
+								},
+								{
+									"key": "returnDate",
+									"value": "",
+									"description": "Return date for round-trip (optional)",
+									"disabled": true
+								},
+								{
+									"key": "passengers",
+									"value": "2",
+									"description": "Number of passengers"
+								},
+								{
+									"key": "status",
+									"value": "",
+									"description": "Filter by status (scheduled, delayed, boarding, departed, arrived, cancelled)",
+									"disabled": true
+								},
+								{
+									"key": "page",
+									"value": "1",
+									"description": "Page number"
+								},
+								{
+									"key": "limit",
+									"value": "10",
+									"description": "Items per page"
+								}
+							]
+						},
+						"description": "Search flights by origin, destination, and date with pagination"
+					},
+					"response": []
+				},
+				{
+					"name": "Get Flight by ID",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/flights/{{flightId}}",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"flights",
+								"{{flightId}}"
+							]
+						},
+						"description": "Get flight details by ID"
+					},
+					"response": []
+				},
+				{
+					"name": "Get Flights by Status",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/flights/status/scheduled",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"flights",
+								"status",
+								"scheduled"
+							]
+						},
+						"description": "Get all flights with a specific status. Status options: scheduled, delayed, boarding, departed, arrived, cancelled"
+					},
+					"response": []
+				},
+				{
+					"name": "Get Flights by Date",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/flights/date/2024-12-25",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"flights",
+								"date",
+								"2024-12-25"
+							]
+						},
+						"description": "Get all flights on a specific date (YYYY-MM-DD format)"
+					},
+					"response": []
+				},
+				{
+					"name": "Update Flight",
+					"request": {
+						"method": "PATCH",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"gate\": \"B15\",\n  \"terminal\": \"2\",\n  \"status\": \"boarding\",\n  \"availableSeats\": 150,\n  \"bookedSeats\": 50\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/flights/{{flightId}}",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"flights",
+								"{{flightId}}"
+							]
+						},
+						"description": "Update flight details. All fields are optional."
+					},
+					"response": []
+				},
+				{
+					"name": "Update Flight Status",
+					"request": {
+						"method": "PATCH",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"status\": \"delayed\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/flights/{{flightId}}/status",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"flights",
+								"{{flightId}}",
+								"status"
+							]
+						},
+						"description": "Update only the flight status"
+					},
+					"response": []
+				},
+				{
+					"name": "Delete Flight",
+					"request": {
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/flights/{{flightId}}",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"flights",
+								"{{flightId}}"
+							]
+						},
+						"description": "Delete a flight. Cannot delete flights with existing bookings."
+					},
+					"response": []
+				}
+			]
+		}
+	],
+	"event": [
+		{
+			"listen": "prerequest",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					""
+				]
+			}
+		},
+		{
+			"listen": "test",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					""
+				]
+			}
+		}
+	],
+	"variable": [
+		{
+			"key": "baseUrl",
+			"value": "http://localhost:3000",
+			"type": "string"
+		},
+		{
+			"key": "flightId",
+			"value": "",
+			"type": "string"
+		},
+		{
+			"key": "routeId",
+			"value": "",
+			"type": "string"
+		},
+		{
+			"key": "scheduleId",
+			"value": "",
+			"type": "string"
+		},
+		{
+			"key": "aircraftId",
+			"value": "",
+			"type": "string"
+		}
+	]
+}
+
