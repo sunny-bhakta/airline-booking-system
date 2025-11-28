@@ -6,6 +6,7 @@ import {
   IsDateString,
   IsString,
   IsInt,
+  IsUUID,
 } from 'class-validator';
 import { FlightStatus } from '../entities/flight.entity';
 
@@ -22,13 +23,9 @@ export class UpdateFlightDto extends PartialType(CreateFlightDto) {
   @IsOptional()
   actualArrivalTime?: string;
 
-  @IsString()
+  @IsUUID()
   @IsOptional()
-  gate?: string;
-
-  @IsString()
-  @IsOptional()
-  terminal?: string;
+  gateId?: string;
 
   @IsInt()
   @IsOptional()

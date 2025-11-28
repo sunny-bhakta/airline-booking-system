@@ -1,5 +1,6 @@
 import { Entity, Column, PrimaryGeneratedColumn, OneToMany } from 'typeorm';
 import { Route } from './route.entity';
+import { Terminal } from './terminal.entity';
 
 export enum AirportType {
   DOMESTIC = 'domestic',
@@ -47,6 +48,9 @@ export class Airport {
 
   @OneToMany(() => Route, (route) => route.destination)
   destinationRoutes: Route[];
+
+  @OneToMany(() => Terminal, (terminal) => terminal.airport)
+  terminals: Terminal[];
 
   @Column({ type: 'datetime', default: () => 'CURRENT_TIMESTAMP' })
   createdAt: Date;

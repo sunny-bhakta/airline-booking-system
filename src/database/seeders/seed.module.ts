@@ -8,7 +8,10 @@ import {
   Schedule,
   Flight,
   SeatConfiguration,
+  Terminal,
+  Gate,
 } from '../../flights/entities';
+import { Booking, Passenger } from '../../bookings/entities';
 
 @Module({
   imports: [
@@ -19,6 +22,10 @@ import {
       Schedule,
       Flight,
       SeatConfiguration,
+      Terminal,
+      Gate,
+      Booking,
+      Passenger,
     ]),
   ],
   providers: [SeederService],

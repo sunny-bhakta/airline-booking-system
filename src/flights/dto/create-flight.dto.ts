@@ -30,13 +30,9 @@ export class CreateFlightDto {
   @IsOptional()
   status?: FlightStatus;
 
-  @IsString()
+  @IsUUID()
   @IsOptional()
-  gate?: string;
-
-  @IsString()
-  @IsOptional()
-  terminal?: string;
+  gateId?: string;
 
   @IsString()
   @IsOptional()

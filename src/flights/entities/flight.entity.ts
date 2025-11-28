@@ -9,6 +9,7 @@ import {
 import { Route } from './route.entity';
 import { Schedule } from './schedule.entity';
 import { Aircraft } from './aircraft.entity';
+import { Gate } from './gate.entity';
 
 export enum FlightStatus {
   SCHEDULED = 'scheduled',
@@ -86,11 +87,12 @@ export class Flight {
   })
   status: FlightStatus;
 
-  @Column({ type: 'varchar', length: 10, nullable: true })
-  gate: string;
+  @Column({ type: 'uuid', nullable: true })
+  gateId: string;
 
-  @Column({ type: 'varchar', length: 10, nullable: true })
-  terminal: string;
+  @ManyToOne(() => Gate, { eager: true, nullable: true })
+  @JoinColumn({ name: 'gateId' })
+  gate: Gate;
 
   @Column({ type: 'int', default: 0 })
   availableSeats: number;
