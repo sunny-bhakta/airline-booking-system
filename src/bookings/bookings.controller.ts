@@ -36,7 +36,31 @@ export class BookingsController {
   @ApiResponse({ status: 201, description: 'Booking created successfully' })
   @ApiResponse({ status: 400, description: 'Bad request' })
   @ApiResponse({ status: 404, description: 'Flight not found' })
-  @ApiBody({ type: CreateBookingDto })
+  @ApiBody({
+    type: CreateBookingDto,
+    examples: {
+      default: {
+        summary: 'Default Input',
+        value: {
+          flightId: 'f3cae1ab-ec9a-4cb5-b124-553cf37e22f7',
+          passengers: [
+            {
+              firstName: 'John',
+              lastName: 'Doe',
+              gender: 'Male',
+              dateOfBirth: '1990-01-01',
+              email: 'john.doe@example.com',
+              phoneNumber: '+1234567890',
+              passportNumber: 'AA1234567'
+            },
+          ],
+          totalAmount: 250.0,
+          currency: 'USD',
+          notes: 'Vegetarian meal requested'
+        },
+      }
+    },
+  })
   create(@Body() createBookingDto: CreateBookingDto) {
     return this.bookingsService.create(createBookingDto);
   }
@@ -154,7 +178,18 @@ export class BookingsController {
   @ApiResponse({ status: 201, description: 'Seat assigned successfully' })
   @ApiResponse({ status: 400, description: 'Bad request' })
   @ApiResponse({ status: 404, description: 'Booking or passenger not found' })
-  @ApiBody({ type: CreateSeatAssignmentDto })
+  @ApiBody({
+    type: CreateSeatAssignmentDto,
+    examples: {
+      default: {
+        summary: 'Default Input',
+        value: {
+          passengerId: 'f3cae1ab-ec9a-4cb5-b124-553cf37e22f7',
+          seatNumber: '12A',
+        },
+      }
+    },
+  })
   assignSeat(
     @Param('id') id: string,
     @Body() createSeatAssignmentDto: CreateSeatAssignmentDto,
@@ -167,6 +202,7 @@ export class BookingsController {
   @ApiParam({ name: 'id', description: 'Booking UUID' })
   @ApiResponse({ status: 200, description: 'List of seat assignments' })
   @ApiResponse({ status: 404, description: 'Booking not found' })
+  
   getSeatAssignments(@Param('id') id: string) {
     return this.bookingsService.getSeatAssignments(id);
   }

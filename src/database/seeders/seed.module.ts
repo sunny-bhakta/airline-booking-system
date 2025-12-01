@@ -11,7 +11,8 @@ import {
   Terminal,
   Gate,
 } from '../../flights/entities';
-import { Booking, Passenger } from '../../bookings/entities';
+import { Booking, Passenger, Ticket, SeatAssignment } from '../../bookings/entities';
+import { Fare, FareRule, TaxFee, PromotionalCode } from '../../pricing/entities';
 
 @Module({
   imports: [
@@ -26,6 +27,12 @@ import { Booking, Passenger } from '../../bookings/entities';
       Gate,
       Booking,
       Passenger,
+      Ticket,
+      SeatAssignment,
+      Fare,
+      FareRule,
+      TaxFee,
+      PromotionalCode,
     ]),
   ],
   providers: [SeederService],
