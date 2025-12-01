@@ -11,30 +11,48 @@ import { Terminal } from '../../flights/entities/terminal.entity';
 import { Gate } from '../../flights/entities/gate.entity';
 import { Booking, BookingStatus } from '../../bookings/entities/booking.entity';
 import { Passenger } from '../../bookings/entities/passenger.entity';
+import { Ticket } from '../../bookings/entities/ticket.entity';
+import { SeatAssignment } from '../../bookings/entities/seat-assignment.entity';
+import { Fare, FareClass } from '../../pricing/entities/fare.entity';
+import { FareRule } from '../../pricing/entities/fare-rule.entity';
+import { TaxFee, TaxFeeType, TaxFeeCalculationType } from '../../pricing/entities/tax-fee.entity';
+import { PromotionalCode, PromotionalCodeType, PromotionalCodeStatus } from '../../pricing/entities/promotional-code.entity';
 
 @Injectable()
 export class SeederService {
   constructor(
     @InjectRepository(Airport)
-    private airportRepository: Repository<Airport>,
+    private readonly airportRepository: Repository<Airport>,
     @InjectRepository(SeatConfiguration)
-    private seatConfigRepository: Repository<SeatConfiguration>,
+    private readonly seatConfigRepository: Repository<SeatConfiguration>,
     @InjectRepository(Aircraft)
-    private aircraftRepository: Repository<Aircraft>,
+    private readonly aircraftRepository: Repository<Aircraft>,
     @InjectRepository(Route)
-    private routeRepository: Repository<Route>,
+    private readonly routeRepository: Repository<Route>,
     @InjectRepository(Schedule)
-    private scheduleRepository: Repository<Schedule>,
+    private readonly scheduleRepository: Repository<Schedule>,
     @InjectRepository(Flight)
-    private flightRepository: Repository<Flight>,
+    private readonly flightRepository: Repository<Flight>,
     @InjectRepository(Terminal)
-    private terminalRepository: Repository<Terminal>,
+    private readonly terminalRepository: Repository<Terminal>,
     @InjectRepository(Gate)
-    private gateRepository: Repository<Gate>,
+    private readonly gateRepository: Repository<Gate>,
     @InjectRepository(Booking)
-    private bookingRepository: Repository<Booking>,
+    private readonly bookingRepository: Repository<Booking>,
     @InjectRepository(Passenger)
-    private passengerRepository: Repository<Passenger>,
+    private readonly passengerRepository: Repository<Passenger>,
+    @InjectRepository(Ticket)
+    private readonly ticketRepository: Repository<Ticket>,
+    @InjectRepository(SeatAssignment)
+    private readonly seatAssignmentRepository: Repository<SeatAssignment>,
+    @InjectRepository(Fare)
+    private readonly fareRepository: Repository<Fare>,
+    @InjectRepository(FareRule)
+    private readonly fareRuleRepository: Repository<FareRule>,
+    @InjectRepository(TaxFee)
+    private readonly taxFeeRepository: Repository<TaxFee>,
+    @InjectRepository(PromotionalCode)
+    private readonly promotionalCodeRepository: Repository<PromotionalCode>,
   ) {}
 
   async seedAll() {
@@ -49,6 +67,12 @@ export class SeederService {
     const schedules = await this.seedSchedules();
     const flights = await this.seedFlights(routes, schedules, aircrafts, gates, airports, terminals, seatConfigs);
     const bookings = await this.seedBookingsWithPassengers(flights);
+    const tickets = await this.seedTickets(bookings);
+    const seatAssignments = await this.seedSeatAssignments(bookings);
+    const promotionalCodes = await this.seedPromotionalCodes();
+    const fares = await this.seedFares(flights, routes, seatConfigs);
+    const fareRules = await this.seedFareRules(fares);
+    const taxFees = await this.seedTaxFees(fares);
 
     console.log('\n✅ Database seeding completed!');
     console.log(`   - ${airports.length} Airports`);
@@ -60,6 +84,12 @@ export class SeederService {
     console.log(`   - ${schedules.length} Schedules`);
     console.log(`   - ${flights.length} Flights`);
     console.log(`   - ${bookings.length} Bookings with Passengers`);
+    console.log(`   - ${tickets.length} Tickets`);
+    console.log(`   - ${seatAssignments.length} Seat Assignments`);
+    console.log(`   - ${promotionalCodes.length} Promotional Codes`);
+    console.log(`   - ${fares.length} Fares`);
+    console.log(`   - ${fareRules.length} Fare Rules`);
+    console.log(`   - ${taxFees.length} Tax Fees`);
   }
 
   async seedAirports(): Promise<Airport[]> {
@@ -1125,8 +1155,661 @@ export class SeederService {
     return bookings;
   }
 
+  async seedTickets(bookings: Booking[]): Promise<Ticket[]> {
+    console.log('\n🎫 Seeding tickets...');
+    
+    if (bookings.length === 0) {
+      console.log('   ⚠ No bookings available to create tickets');
+      return [];
+    }
+
+    // Helper to generate IATA ticket number (13 digits)
+    const generateTicketNumber = (): string => {
+      // IATA format: 3-digit airline code + 10-digit number
+      // Using 123 as airline code for simplicity
+      const randomNum = Math.floor(Math.random() * 10000000000).toString().padStart(10, '0');
+      return `123${randomNum}`;
+    };
+
+    const tickets: Ticket[] = [];
+    
+    // Create tickets for confirmed bookings only
+    const confirmedBookings = bookings.filter(b => b.status === BookingStatus.CONFIRMED);
+    
+    for (const booking of confirmedBookings) {
+      // Get passengers for this booking
+      const passengers = await this.passengerRepository.find({
+        where: { bookingId: booking.id },
+      });
+
+      for (const passenger of passengers) {
+        // Check if ticket already exists
+        const existingTicket = await this.ticketRepository.findOne({
+          where: { bookingId: booking.id, passengerId: passenger.id },
+        });
+
+        if (existingTicket) {
+          tickets.push(existingTicket);
+          continue;
+        }
+
+        // Generate unique ticket number
+        let ticketNumber = generateTicketNumber();
+        let existingTicketNum = await this.ticketRepository.findOne({
+          where: { ticketNumber },
+        });
+        while (existingTicketNum) {
+          ticketNumber = generateTicketNumber();
+          existingTicketNum = await this.ticketRepository.findOne({
+            where: { ticketNumber },
+          });
+        }
+
+        // Calculate fare breakdown (base fare, taxes, fees)
+        const baseFare = booking.totalAmount / passengers.length;
+        const taxes = baseFare * 0.15; // 15% taxes
+        const fees = baseFare * 0.05; // 5% fees
+        const totalFare = baseFare + taxes + fees;
+
+        // Determine fare class (random for demo)
+        const fareClasses = ['Economy', 'Premium Economy', 'Business', 'First'];
+        const fareClass = fareClasses[Math.floor(Math.random() * fareClasses.length)];
+
+        const ticket = this.ticketRepository.create({
+          ticketNumber,
+          bookingId: booking.id,
+          passengerId: passenger.id,
+          fare: baseFare,
+          taxes,
+          fees,
+          fareClass,
+          issuedDate: booking.confirmationDate || booking.bookingDate || new Date(),
+          expiryDate: new Date(new Date().setFullYear(new Date().getFullYear() + 1)),
+          isActive: true,
+          termsAndConditions: 'Standard airline terms and conditions apply.',
+        });
+
+        const savedTicket = await this.ticketRepository.save(ticket);
+        tickets.push(savedTicket);
+        console.log(`   ✓ Created ticket ${ticketNumber} for passenger ${passenger.firstName} ${passenger.lastName}`);
+      }
+    }
+
+    return tickets;
+  }
+
+  async seedSeatAssignments(bookings: Booking[]): Promise<SeatAssignment[]> {
+    console.log('\n💺 Seeding seat assignments...');
+    
+    if (bookings.length === 0) {
+      console.log('   ⚠ No bookings available to create seat assignments');
+      return [];
+    }
+
+    const seatAssignments: SeatAssignment[] = [];
+    const seatTypes = ['window', 'aisle', 'middle', 'exit-row'];
+    const seatClasses = ['economy', 'premium-economy', 'business', 'first'];
+    const seatLetters = ['A', 'B', 'C', 'D', 'E', 'F'];
+
+    for (const booking of bookings) {
+      // Get passengers for this booking
+      const passengers = await this.passengerRepository.find({
+        where: { bookingId: booking.id },
+      });
+
+      // Get flight to determine seat configuration
+      const flight = await this.flightRepository.findOne({
+        where: { id: booking.flightId },
+        relations: ['aircraft', 'aircraft.seatConfiguration'],
+      });
+
+      if (!flight || !flight.aircraft) {
+        continue;
+      }
+
+      // Get seat configuration
+      const seatConfig = await this.seatConfigRepository.findOne({
+        where: { id: flight.aircraft.seatConfigurationId },
+      });
+
+      if (!seatConfig) {
+        continue;
+      }
+
+      // Assign seats to passengers
+      const usedSeats = new Set<string>();
+      let rowNumber = 5; // Start from row 5 to avoid conflicts
+      
+      for (const passenger of passengers) {
+        // Check if seat already assigned
+        const existingAssignment = await this.seatAssignmentRepository.findOne({
+          where: { bookingId: booking.id, passengerId: passenger.id },
+        });
+
+        if (existingAssignment) {
+          seatAssignments.push(existingAssignment);
+          usedSeats.add(existingAssignment.seatNumber);
+          continue;
+        }
+
+        // Determine seat class based on booking amount (simplified logic)
+        let seatClass = 'economy';
+        if (booking.totalAmount > 50000) {
+          seatClass = 'first';
+        } else if (booking.totalAmount > 30000) {
+          seatClass = 'business';
+        } else if (booking.totalAmount > 20000) {
+          seatClass = 'premium-economy';
+        }
+
+        // Generate unique seat number
+        let seatNumber: string;
+        let attempts = 0;
+        do {
+          const seatLetter = seatLetters[Math.floor(Math.random() * seatLetters.length)];
+          seatNumber = `${rowNumber}${seatLetter}`;
+          attempts++;
+          
+          // If seat already used, try next row
+          if (usedSeats.has(seatNumber)) {
+            rowNumber++;
+            if (rowNumber > seatConfig.layout.rows) {
+              rowNumber = 5; // Reset if we exceed max rows
+            }
+          }
+        } while (usedSeats.has(seatNumber) && attempts < 100);
+
+        usedSeats.add(seatNumber);
+        const seatType = seatTypes[Math.floor(Math.random() * seatTypes.length)];
+
+        // Premium seat pricing (exit-row, window, aisle in business/first)
+        let seatPrice = 0;
+        if (seatType === 'exit-row' || (seatClass !== 'economy' && (seatType === 'window' || seatType === 'aisle'))) {
+          seatPrice = 500 + Math.random() * 2000;
+        }
+
+        const seatAssignment = this.seatAssignmentRepository.create({
+          bookingId: booking.id,
+          passengerId: passenger.id,
+          seatNumber,
+          seatType,
+          seatClass,
+          seatPrice,
+          isPreferred: Math.random() > 0.7, // 30% chance of being preferred
+          assignedDate: booking.bookingDate || new Date(),
+        });
+
+        const savedAssignment = await this.seatAssignmentRepository.save(seatAssignment);
+        seatAssignments.push(savedAssignment);
+        rowNumber++; // Move to next row for next passenger
+      }
+    }
+
+    console.log(`   ✓ Created ${seatAssignments.length} seat assignments`);
+    return seatAssignments;
+  }
+
+  async seedPromotionalCodes(): Promise<PromotionalCode[]> {
+    console.log('\n🎟️  Seeding promotional codes...');
+    
+    const today = new Date();
+    const codesData = [
+      {
+        code: 'WELCOME10',
+        name: 'Welcome Discount',
+        description: '10% off on your first booking',
+        type: PromotionalCodeType.PERCENTAGE,
+        discountValue: 10,
+        maxDiscountAmount: 5000,
+        minPurchaseAmount: 5000,
+        status: PromotionalCodeStatus.ACTIVE,
+        validFrom: new Date(today.getTime() - 30 * 24 * 60 * 60 * 1000), // 30 days ago
+        validTo: new Date(today.getTime() + 365 * 24 * 60 * 60 * 1000), // 1 year from now
+        maxUses: 1000,
+        currentUses: 0,
+        maxUsesPerUser: 1,
+        applicableFareClass: null,
+        currency: 'INR',
+        isFirstTimeUserOnly: true,
+        termsAndConditions: 'Valid for first-time users only. Cannot be combined with other offers.',
+      },
+      {
+        code: 'SUMMER2024',
+        name: 'Summer Sale',
+        description: 'Flat ₹2000 off on bookings above ₹15000',
+        type: PromotionalCodeType.FIXED_AMOUNT,
+        discountValue: 2000,
+        maxDiscountAmount: 2000,
+        minPurchaseAmount: 15000,
+        status: PromotionalCodeStatus.ACTIVE,
+        validFrom: new Date('2024-06-01'),
+        validTo: new Date('2024-08-31'),
+        maxUses: 500,
+        currentUses: 0,
+        maxUsesPerUser: 3,
+        applicableFareClass: null,
+        currency: 'INR',
+        isFirstTimeUserOnly: false,
+        termsAndConditions: 'Valid for bookings made between June and August 2024.',
+      },
+      {
+        code: 'BUSINESS15',
+        name: 'Business Class Discount',
+        description: '15% off on Business and First class bookings',
+        type: PromotionalCodeType.PERCENTAGE,
+        discountValue: 15,
+        maxDiscountAmount: 10000,
+        minPurchaseAmount: 20000,
+        status: PromotionalCodeStatus.ACTIVE,
+        validFrom: new Date(today.getTime() - 7 * 24 * 60 * 60 * 1000),
+        validTo: new Date(today.getTime() + 180 * 24 * 60 * 60 * 1000),
+        maxUses: 200,
+        currentUses: 0,
+        maxUsesPerUser: 2,
+        applicableFareClass: 'Business,First',
+        currency: 'INR',
+        isFirstTimeUserOnly: false,
+        termsAndConditions: 'Valid only for Business and First class bookings.',
+      },
+      {
+        code: 'EARLYBIRD',
+        name: 'Early Bird Special',
+        description: '₹1500 off on advance bookings (30+ days)',
+        type: PromotionalCodeType.FIXED_AMOUNT,
+        discountValue: 1500,
+        maxDiscountAmount: 1500,
+        minPurchaseAmount: 10000,
+        status: PromotionalCodeStatus.ACTIVE,
+        validFrom: new Date(today),
+        validTo: new Date(today.getTime() + 90 * 24 * 60 * 60 * 1000),
+        maxUses: 300,
+        currentUses: 0,
+        maxUsesPerUser: 1,
+        applicableFareClass: null,
+        currency: 'INR',
+        isFirstTimeUserOnly: false,
+        termsAndConditions: 'Valid for bookings made at least 30 days in advance.',
+      },
+      {
+        code: 'EXPIRED2023',
+        name: 'Expired Code',
+        description: 'This code has expired',
+        type: PromotionalCodeType.PERCENTAGE,
+        discountValue: 20,
+        maxDiscountAmount: 5000,
+        minPurchaseAmount: 5000,
+        status: PromotionalCodeStatus.EXPIRED,
+        validFrom: new Date('2023-01-01'),
+        validTo: new Date('2023-12-31'),
+        maxUses: 100,
+        currentUses: 95,
+        maxUsesPerUser: 1,
+        applicableFareClass: null,
+        currency: 'INR',
+        isFirstTimeUserOnly: false,
+        termsAndConditions: 'This promotional code has expired.',
+      },
+    ];
+
+    const codes: PromotionalCode[] = [];
+    for (const data of codesData) {
+      let code = await this.promotionalCodeRepository.findOne({
+        where: { code: data.code },
+      });
+
+      if (!code) {
+        code = this.promotionalCodeRepository.create(data);
+        code = await this.promotionalCodeRepository.save(code);
+        console.log(`   ✓ Created promotional code: ${data.code} - ${data.name}`);
+      } else {
+        console.log(`   ⊙ Promotional code already exists: ${data.code}`);
+      }
+      codes.push(code);
+    }
+
+    return codes;
+  }
+
+  async seedFares(
+    flights: Flight[],
+    routes: Route[],
+    seatConfigs: SeatConfiguration[],
+  ): Promise<Fare[]> {
+    console.log('\n💰 Seeding fares...');
+    
+    if (flights.length === 0) {
+      console.log('   ⚠ No flights available to create fares');
+      return [];
+    }
+
+    const fares: Fare[] = [];
+    const today = new Date();
+
+    // Base fare prices by class (in INR)
+    const baseFaresByClass = {
+      [FareClass.ECONOMY]: { min: 3000, max: 8000 },
+      [FareClass.PREMIUM_ECONOMY]: { min: 8000, max: 15000 },
+      [FareClass.BUSINESS]: { min: 20000, max: 40000 },
+      [FareClass.FIRST]: { min: 50000, max: 100000 },
+    };
+
+    // Process a subset of flights (up to 50) to avoid too many fares
+    const flightsToProcess = flights.slice(0, Math.min(50, flights.length));
+
+    for (const flight of flightsToProcess) {
+      // Get aircraft and seat configuration
+      const aircraft = await this.aircraftRepository.findOne({
+        where: { id: flight.aircraftId },
+      });
+
+      if (!aircraft) continue;
+
+      const seatConfig = seatConfigs.find(sc => sc.id === aircraft.seatConfigurationId);
+      if (!seatConfig) continue;
+
+      // Create fares for each available seat class
+      const availableClasses = seatConfig.layout.classes.filter(
+        c => seatConfig.seatCountByClass[c.class] > 0
+      );
+
+      for (const classConfig of availableClasses) {
+        // Map SeatClass to FareClass
+        let fareClass: FareClass;
+        switch (classConfig.class) {
+          case SeatClass.FIRST:
+            fareClass = FareClass.FIRST;
+            break;
+          case SeatClass.BUSINESS:
+            fareClass = FareClass.BUSINESS;
+            break;
+          case SeatClass.PREMIUM_ECONOMY:
+            fareClass = FareClass.PREMIUM_ECONOMY;
+            break;
+          default:
+            fareClass = FareClass.ECONOMY;
+        }
+
+        // Check if fare already exists
+        const existingFare = await this.fareRepository.findOne({
+          where: { flightId: flight.id, fareClass },
+        });
+
+        if (existingFare) {
+          fares.push(existingFare);
+          continue;
+        }
+
+        // Calculate base fare
+        const fareRange = baseFaresByClass[fareClass];
+        const baseFare = fareRange.min + Math.random() * (fareRange.max - fareRange.min);
+
+        // Dynamic price adjustment based on demand (0-20% increase)
+        const dynamicAdjustment = baseFare * (Math.random() * 0.2);
+        const totalFare = baseFare + dynamicAdjustment;
+
+        // Available seats for this class
+        const totalSeatsForClass = seatConfig.seatCountByClass[classConfig.class];
+        const bookedSeatsForClass = Math.floor(totalSeatsForClass * Math.random() * 0.3); // 0-30% booked
+        const availableSeatsForClass = totalSeatsForClass - bookedSeatsForClass;
+
+        const fare = this.fareRepository.create({
+          flightId: flight.id,
+          routeId: flight.routeId,
+          fareClass,
+          baseFare: Math.round(baseFare * 100) / 100,
+          dynamicPriceAdjustment: Math.round(dynamicAdjustment * 100) / 100,
+          totalFare: Math.round(totalFare * 100) / 100,
+          availableSeats: availableSeatsForClass,
+          bookedSeats: bookedSeatsForClass,
+          currency: 'INR',
+          isActive: true,
+          validFrom: today,
+          validTo: new Date(today.getTime() + 365 * 24 * 60 * 60 * 1000), // 1 year
+        });
+
+        const savedFare = await this.fareRepository.save(fare);
+        fares.push(savedFare);
+      }
+    }
+
+    console.log(`   ✓ Created ${fares.length} fares`);
+    return fares;
+  }
+
+  async seedFareRules(fares: Fare[]): Promise<FareRule[]> {
+    console.log('\n📜 Seeding fare rules...');
+    
+    if (fares.length === 0) {
+      console.log('   ⚠ No fares available to create fare rules');
+      return [];
+    }
+
+    const fareRules: FareRule[] = [];
+
+    for (const fare of fares) {
+      // Check if rule already exists
+      const existingRule = await this.fareRuleRepository.findOne({
+        where: { fareId: fare.id },
+      });
+
+      if (existingRule) {
+        fareRules.push(existingRule);
+        continue;
+      }
+
+      // Determine rules based on fare class
+      let ruleConfig: Partial<FareRule>;
+      
+      if (fare.fareClass === FareClass.FIRST) {
+        // First class: fully refundable, changeable
+        ruleConfig = {
+          fareId: fare.id,
+          isRefundable: true,
+          refundFee: 0,
+          refundDeadlineDays: 0, // Anytime
+          isChangeable: true,
+          changeFee: 0,
+          changeDeadlineDays: 0,
+          requiresAdvancePurchase: false,
+          requiresMinimumStay: false,
+          requiresMaximumStay: false,
+          isNonRefundable: false,
+          isNonChangeable: false,
+          allowsNameChange: true,
+          nameChangeFee: 0,
+          restrictions: null,
+          termsAndConditions: 'First class tickets are fully refundable and changeable without fees.',
+        };
+      } else if (fare.fareClass === FareClass.BUSINESS) {
+        // Business: mostly refundable with small fee
+        ruleConfig = {
+          fareId: fare.id,
+          isRefundable: true,
+          refundFee: 1000,
+          refundDeadlineDays: 7, // 7 days before departure
+          isChangeable: true,
+          changeFee: 500,
+          changeDeadlineDays: 3,
+          requiresAdvancePurchase: false,
+          requiresMinimumStay: false,
+          requiresMaximumStay: false,
+          isNonRefundable: false,
+          isNonChangeable: false,
+          allowsNameChange: true,
+          nameChangeFee: 2000,
+          restrictions: null,
+          termsAndConditions: 'Business class tickets are refundable with a fee. Changes allowed with fee.',
+        };
+      } else if (fare.fareClass === FareClass.PREMIUM_ECONOMY) {
+        // Premium Economy: partially refundable
+        ruleConfig = {
+          fareId: fare.id,
+          isRefundable: true,
+          refundFee: 2000,
+          refundDeadlineDays: 14,
+          isChangeable: true,
+          changeFee: 1500,
+          changeDeadlineDays: 7,
+          requiresAdvancePurchase: false,
+          requiresMinimumStay: false,
+          requiresMaximumStay: false,
+          isNonRefundable: false,
+          isNonChangeable: false,
+          allowsNameChange: true,
+          nameChangeFee: 3000,
+          restrictions: null,
+          termsAndConditions: 'Premium Economy tickets have refund and change fees.',
+        };
+      } else {
+        // Economy: restrictive rules
+        const isFlexible = Math.random() > 0.5; // 50% chance of flexible economy
+        
+        if (isFlexible) {
+          ruleConfig = {
+            fareId: fare.id,
+            isRefundable: true,
+            refundFee: 3000,
+            refundDeadlineDays: 21,
+            isChangeable: true,
+            changeFee: 2000,
+            changeDeadlineDays: 14,
+            requiresAdvancePurchase: false,
+            requiresMinimumStay: false,
+            requiresMaximumStay: false,
+            isNonRefundable: false,
+            isNonChangeable: false,
+            allowsNameChange: false,
+            nameChangeFee: null,
+            restrictions: null,
+            termsAndConditions: 'Flexible Economy tickets allow changes and refunds with fees.',
+          };
+        } else {
+          ruleConfig = {
+            fareId: fare.id,
+            isRefundable: false,
+            refundFee: null,
+            refundDeadlineDays: null,
+            isChangeable: false,
+            changeFee: null,
+            changeDeadlineDays: null,
+            requiresAdvancePurchase: true,
+            advancePurchaseDays: 14,
+            requiresMinimumStay: false,
+            requiresMaximumStay: false,
+            isNonRefundable: true,
+            isNonChangeable: true,
+            allowsNameChange: false,
+            nameChangeFee: null,
+            restrictions: 'Non-refundable, non-changeable. Advance purchase required.',
+            termsAndConditions: 'Basic Economy tickets are non-refundable and non-changeable.',
+          };
+        }
+      }
+
+      const fareRule = this.fareRuleRepository.create(ruleConfig);
+      const savedRule = await this.fareRuleRepository.save(fareRule);
+      fareRules.push(savedRule);
+    }
+
+    console.log(`   ✓ Created ${fareRules.length} fare rules`);
+    return fareRules;
+  }
+
+  async seedTaxFees(fares: Fare[]): Promise<TaxFee[]> {
+    console.log('\n💸 Seeding tax fees...');
+    
+    if (fares.length === 0) {
+      console.log('   ⚠ No fares available to create tax fees');
+      return [];
+    }
+
+    const taxFees: TaxFee[] = [];
+    
+    // Standard tax/fee types for Indian airports
+    const standardTaxFees = [
+      {
+        type: TaxFeeType.AIRPORT_TAX,
+        name: 'Airport Development Fee',
+        calculationType: TaxFeeCalculationType.FIXED,
+        amount: 200,
+        minAmount: null,
+        maxAmount: null,
+        description: 'Airport development fee charged by Indian airports',
+      },
+      {
+        type: TaxFeeType.FUEL_SURCHARGE,
+        name: 'Fuel Surcharge',
+        calculationType: TaxFeeCalculationType.PERCENTAGE,
+        amount: 5, // 5% of base fare
+        minAmount: 500,
+        maxAmount: 5000,
+        description: 'Fuel surcharge based on base fare',
+      },
+      {
+        type: TaxFeeType.SERVICE_FEE,
+        name: 'Service Fee',
+        calculationType: TaxFeeCalculationType.FIXED,
+        amount: 150,
+        minAmount: null,
+        maxAmount: null,
+        description: 'Service fee for booking processing',
+      },
+      {
+        type: TaxFeeType.SECURITY_FEE,
+        name: 'Security Fee',
+        calculationType: TaxFeeCalculationType.FIXED,
+        amount: 100,
+        minAmount: null,
+        maxAmount: null,
+        description: 'Security fee as per government regulations',
+      },
+    ];
+
+    // Create tax fees for a subset of fares (to avoid too many records)
+    const faresToProcess = fares.slice(0, Math.min(30, fares.length));
+
+    for (const fare of faresToProcess) {
+      for (const taxFeeData of standardTaxFees) {
+        // Check if tax fee already exists
+        const existingTaxFee = await this.taxFeeRepository.findOne({
+          where: { fareId: fare.id, type: taxFeeData.type },
+        });
+
+        if (existingTaxFee) {
+          taxFees.push(existingTaxFee);
+          continue;
+        }
+
+        const taxFee = this.taxFeeRepository.create({
+          fareId: fare.id,
+          type: taxFeeData.type,
+          name: taxFeeData.name,
+          calculationType: taxFeeData.calculationType,
+          amount: taxFeeData.amount,
+          minAmount: taxFeeData.minAmount,
+          maxAmount: taxFeeData.maxAmount,
+          currency: 'INR',
+          isActive: true,
+          description: taxFeeData.description,
+        });
+
+        const savedTaxFee = await this.taxFeeRepository.save(taxFee);
+        taxFees.push(savedTaxFee);
+      }
+    }
+
+    console.log(`   ✓ Created ${taxFees.length} tax fees`);
+    return taxFees;
+  }
+
   async clearAll() {
     console.log('🗑️  Clearing all data...');
+    await this.seatAssignmentRepository.delete({});
+    await this.ticketRepository.delete({});
+    await this.taxFeeRepository.delete({});
+    await this.fareRuleRepository.delete({});
+    await this.fareRepository.delete({});
+    await this.promotionalCodeRepository.delete({});
     await this.passengerRepository.delete({});
     await this.bookingRepository.delete({});
     await this.flightRepository.delete({});

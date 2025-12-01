@@ -4,6 +4,7 @@ import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { FlightsModule } from './flights/flights.module';
 import { BookingsModule } from './bookings/bookings.module';
+import { PricingModule } from './pricing/pricing.module';
 import { SeedModule } from './database/seeders/seed.module';
 import { Flight } from './flights/entities/flight.entity';
 import { Route } from './flights/entities/route.entity';
@@ -13,6 +14,7 @@ import { Aircraft } from './flights/entities/aircraft.entity';
 import { SeatConfiguration } from './flights/entities/seat-configuration.entity';
 import { Booking, Passenger, Ticket, SeatAssignment } from './bookings/entities';
 import { Gate, Terminal } from './flights/entities';
+import { Fare, FareRule, TaxFee, PromotionalCode } from './pricing/entities';
 
 @Module({
   imports: [
@@ -32,12 +34,17 @@ import { Gate, Terminal } from './flights/entities';
         SeatAssignment,
         Terminal,
         Gate,
+        Fare,
+        FareRule,
+        TaxFee,
+        PromotionalCode,
       ],
       synchronize: true, // Set to false in production
       logging: true,
     }),
     FlightsModule,
     BookingsModule,
+    PricingModule,
     SeedModule,
   ],
   controllers: [AppController],
