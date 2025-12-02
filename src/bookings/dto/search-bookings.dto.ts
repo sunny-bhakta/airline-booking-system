@@ -4,6 +4,7 @@ import {
   IsEnum,
   IsDateString,
   IsInt,
+  IsUUID,
   Min,
 } from 'class-validator';
 import { BookingStatus } from '../entities/booking.entity';
@@ -12,6 +13,10 @@ export class SearchBookingsDto {
   @IsString()
   @IsOptional()
   pnr?: string;
+
+  @IsUUID()
+  @IsOptional()
+  userId?: string;
 
   @IsString()
   @IsOptional()

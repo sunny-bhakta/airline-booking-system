@@ -11,6 +11,7 @@ import { Passenger } from './entities/passenger.entity';
 import { Ticket } from './entities/ticket.entity';
 import { SeatAssignment } from './entities/seat-assignment.entity';
 import { Flight } from '../flights/entities/flight.entity';
+import { User } from '../users/entities/user.entity';
 import { CreateBookingDto } from './dto/create-booking.dto';
 import { UpdateBookingDto } from './dto/update-booking.dto';
 import { CreateSeatAssignmentDto } from './dto/create-seat-assignment.dto';
@@ -29,6 +30,8 @@ export class BookingsService {
     private seatAssignmentRepository: Repository<SeatAssignment>,
     @InjectRepository(Flight)
     private flightRepository: Repository<Flight>,
+    @InjectRepository(User)
+    private userRepository: Repository<User>,
   ) {}
 
   /**
@@ -98,10 +101,21 @@ export class BookingsService {
       }
     } while (!(await this.isPNRUnique(pnr)));
 
+    // Validate user if provided
+    if (createBookingDto.userId) {
+      const user = await this.userRepository.findOne({
+        where: { id: createBookingDto.userId },
+      });
+      if (!user) {
+        throw new NotFoundException('User not found');
+      }
+    }
+
     // Create booking
     const booking = this.bookingRepository.create({
       pnr,
       flightId: createBookingDto.flightId,
+      userId: createBookingDto.userId || null,
       status: BookingStatus.PENDING,
       totalAmount: createBookingDto.totalAmount,
       currency: createBookingDto.currency || 'USD',
@@ -144,6 +158,8 @@ export class BookingsService {
         'flight.route',
         'flight.route.origin',
         'flight.route.destination',
+        'user',
+        'user.profile',
         'passengers',
         'tickets',
         'seatAssignments',
@@ -164,6 +180,8 @@ export class BookingsService {
         'flight.route.origin',
         'flight.route.destination',
         'flight.aircraft',
+        'user',
+        'user.profile',
         'passengers',
         'tickets',
         'seatAssignments',
@@ -190,6 +208,8 @@ export class BookingsService {
         'flight.route.origin',
         'flight.route.destination',
         'flight.aircraft',
+        'user',
+        'user.profile',
         'passengers',
         'tickets',
         'seatAssignments',
@@ -215,6 +235,7 @@ export class BookingsService {
   }> {
     const {
       pnr,
+      userId,
       flightId,
       status,
       bookingDateFrom,
@@ -229,12 +250,18 @@ export class BookingsService {
       .leftJoinAndSelect('flight.route', 'route')
       .leftJoinAndSelect('route.origin', 'origin')
       .leftJoinAndSelect('route.destination', 'destination')
+      .leftJoinAndSelect('booking.user', 'user')
+      .leftJoinAndSelect('user.profile', 'userProfile')
       .leftJoinAndSelect('booking.passengers', 'passengers')
       .leftJoinAndSelect('booking.tickets', 'tickets')
       .leftJoinAndSelect('booking.seatAssignments', 'seatAssignments');
 
     if (pnr) {
       queryBuilder.andWhere('booking.pnr = :pnr', { pnr: pnr.toUpperCase() });
+    }
+
+    if (userId) {
+      queryBuilder.andWhere('booking.userId = :userId', { userId });
     }
 
     if (flightId) {
@@ -512,6 +539,27 @@ export class BookingsService {
   async getBookingsByStatus(status: BookingStatus): Promise<Booking[]> {
     return await this.bookingRepository.find({
       where: { status },
+      relations: [
+        'flight',
+        'flight.route',
+        'flight.route.origin',
+        'flight.route.destination',
+        'user',
+        'user.profile',
+        'passengers',
+        'tickets',
+        'seatAssignments',
+      ],
+      order: { bookingDate: 'DESC' },
+    });
+  }
+
+  /**
+   * Get bookings by user ID
+   */
+  async findByUserId(userId: string): Promise<Booking[]> {
+    return await this.bookingRepository.find({
+      where: { userId },
       relations: [
         'flight',
         'flight.route',

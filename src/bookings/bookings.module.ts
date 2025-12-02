@@ -9,6 +9,7 @@ import {
   SeatAssignment,
 } from './entities';
 import { Flight } from '../flights/entities/flight.entity';
+import { User } from '../users/entities/user.entity';
 import { PricingModule } from '../pricing/pricing.module';
 
 @Module({
@@ -19,6 +20,7 @@ import { PricingModule } from '../pricing/pricing.module';
       Ticket,
       SeatAssignment,
       Flight,
+      User,
     ]),
     PricingModule,
   ],
