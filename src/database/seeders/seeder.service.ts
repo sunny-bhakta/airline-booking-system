@@ -205,6 +205,51 @@ export class SeederService {
         timezone: 'Asia/Kolkata',
         type: AirportType.INTERNATIONAL,
       },
+      // Nearby airports for testing nearby airport search
+      {
+        iataCode: 'PNQ',
+        icaoCode: 'VAPO',
+        name: 'Pune Airport',
+        city: 'Pune',
+        country: 'India',
+        latitude: 18.5822,
+        longitude: 73.9197,
+        timezone: 'Asia/Kolkata',
+        type: AirportType.DOMESTIC,
+      },
+      {
+        iataCode: 'IXC',
+        icaoCode: 'VICG',
+        name: 'Chandigarh Airport',
+        city: 'Chandigarh',
+        country: 'India',
+        latitude: 30.6735,
+        longitude: 76.7885,
+        timezone: 'Asia/Kolkata',
+        type: AirportType.DOMESTIC,
+      },
+      {
+        iataCode: 'COK',
+        icaoCode: 'VOCI',
+        name: 'Cochin International Airport',
+        city: 'Kochi',
+        country: 'India',
+        latitude: 9.9312,
+        longitude: 76.2673,
+        timezone: 'Asia/Kolkata',
+        type: AirportType.INTERNATIONAL,
+      },
+      {
+        iataCode: 'AMD',
+        icaoCode: 'VAAH',
+        name: 'Sardar Vallabhbhai Patel International Airport',
+        city: 'Ahmedabad',
+        country: 'India',
+        latitude: 23.0772,
+        longitude: 72.5714,
+        timezone: 'Asia/Kolkata',
+        type: AirportType.INTERNATIONAL,
+      },
     ];
 
     const airports: Airport[] = [];
@@ -261,6 +306,20 @@ export class SeederService {
       
       // Goa (GOI) - Dabolim Airport
       { airport: airports[6], name: 'Terminal 1', description: 'Domestic & International Terminal' },
+      
+      // Pune (PNQ) - Pune Airport
+      { airport: airports[7], name: 'Terminal 1', description: 'Domestic Terminal' },
+      
+      // Chandigarh (IXC) - Chandigarh Airport
+      { airport: airports[8], name: 'Terminal 1', description: 'Domestic Terminal' },
+      
+      // Kochi (COK) - Cochin International Airport
+      { airport: airports[9], name: 'Terminal 1', description: 'Domestic Terminal' },
+      { airport: airports[9], name: 'Terminal 2', description: 'International Terminal' },
+      
+      // Ahmedabad (AMD) - Sardar Vallabhbhai Patel International Airport
+      { airport: airports[10], name: 'Terminal 1', description: 'Domestic Terminal' },
+      { airport: airports[10], name: 'Terminal 2', description: 'International Terminal' },
     ];
 
     const terminals: Terminal[] = [];
@@ -659,6 +718,85 @@ export class SeederService {
         distance: 445,
         estimatedDuration: 70,
       },
+      // Additional routes for new airports and more connections
+      // BOM ↔ PNQ (Mumbai ↔ Pune) - Nearby airports
+      {
+        originId: airports[1].id, // BOM
+        destinationId: airports[7].id, // PNQ
+        distance: 120,
+        estimatedDuration: 30,
+      },
+      {
+        originId: airports[7].id, // PNQ
+        destinationId: airports[1].id, // BOM
+        distance: 120,
+        estimatedDuration: 30,
+      },
+      // DEL ↔ IXC (Delhi ↔ Chandigarh) - Nearby airports
+      {
+        originId: airports[0].id, // DEL
+        destinationId: airports[8].id, // IXC
+        distance: 240,
+        estimatedDuration: 50,
+      },
+      {
+        originId: airports[8].id, // IXC
+        destinationId: airports[0].id, // DEL
+        distance: 240,
+        estimatedDuration: 50,
+      },
+      // BLR ↔ COK (Bangalore ↔ Kochi)
+      {
+        originId: airports[2].id, // BLR
+        destinationId: airports[9].id, // COK
+        distance: 560,
+        estimatedDuration: 80,
+      },
+      {
+        originId: airports[9].id, // COK
+        destinationId: airports[2].id, // BLR
+        distance: 560,
+        estimatedDuration: 80,
+      },
+      // BOM ↔ AMD (Mumbai ↔ Ahmedabad)
+      {
+        originId: airports[1].id, // BOM
+        destinationId: airports[10].id, // AMD
+        distance: 520,
+        estimatedDuration: 75,
+      },
+      {
+        originId: airports[10].id, // AMD
+        destinationId: airports[1].id, // BOM
+        distance: 520,
+        estimatedDuration: 75,
+      },
+      // DEL ↔ AMD (Delhi ↔ Ahmedabad)
+      {
+        originId: airports[0].id, // DEL
+        destinationId: airports[10].id, // AMD
+        distance: 950,
+        estimatedDuration: 110,
+      },
+      {
+        originId: airports[10].id, // AMD
+        destinationId: airports[0].id, // DEL
+        distance: 950,
+        estimatedDuration: 110,
+      },
+      // HYD ↔ COK (Hyderabad ↔ Kochi)
+      {
+        originId: airports[5].id, // HYD
+        destinationId: airports[9].id, // COK
+        distance: 780,
+        estimatedDuration: 95,
+      },
+      {
+        originId: airports[9].id, // COK
+        destinationId: airports[5].id, // HYD
+        distance: 780,
+        estimatedDuration: 95,
+      },
     ];
 
     const routes: Route[] = [];
@@ -716,6 +854,63 @@ export class SeederService {
         departureTime: '18:00:00',
         arrivalTime: '21:00:00',
         duration: 180,
+        daysOfWeek: '1,2,3,4,5,6,7',
+        effectiveFrom: new Date('2024-01-01'),
+        effectiveTo: new Date('2025-12-31'),
+      },
+      // Additional schedules for more time variety
+      {
+        departureTime: '06:00:00',
+        arrivalTime: '08:30:00',
+        duration: 150,
+        daysOfWeek: '1,2,3,4,5,6,7',
+        effectiveFrom: new Date('2024-01-01'),
+        effectiveTo: new Date('2025-12-31'),
+      },
+      {
+        departureTime: '12:00:00',
+        arrivalTime: '14:15:00',
+        duration: 135,
+        daysOfWeek: '1,2,3,4,5,6,7',
+        effectiveFrom: new Date('2024-01-01'),
+        effectiveTo: new Date('2025-12-31'),
+      },
+      {
+        departureTime: '16:30:00',
+        arrivalTime: '19:00:00',
+        duration: 150,
+        daysOfWeek: '1,2,3,4,5,6,7',
+        effectiveFrom: new Date('2024-01-01'),
+        effectiveTo: new Date('2025-12-31'),
+      },
+      {
+        departureTime: '20:00:00',
+        arrivalTime: '22:30:00',
+        duration: 150,
+        daysOfWeek: '1,2,3,4,5,6,7',
+        effectiveFrom: new Date('2024-01-01'),
+        effectiveTo: new Date('2025-12-31'),
+      },
+      {
+        departureTime: '22:00:00',
+        arrivalTime: '00:30:00',
+        duration: 150,
+        daysOfWeek: '1,2,3,4,5,6,7',
+        effectiveFrom: new Date('2024-01-01'),
+        effectiveTo: new Date('2025-12-31'),
+      },
+      {
+        departureTime: '07:30:00',
+        arrivalTime: '09:00:00',
+        duration: 90,
+        daysOfWeek: '1,2,3,4,5,6,7',
+        effectiveFrom: new Date('2024-01-01'),
+        effectiveTo: new Date('2025-12-31'),
+      },
+      {
+        departureTime: '11:00:00',
+        arrivalTime: '12:30:00',
+        duration: 90,
         daysOfWeek: '1,2,3,4,5,6,7',
         effectiveFrom: new Date('2024-01-01'),
         effectiveTo: new Date('2025-12-31'),
@@ -928,6 +1123,147 @@ export class SeederService {
           status: FlightStatus.SCHEDULED,
         });
       }
+
+      // Additional flights for new routes and more variety
+      // BOM ↔ PNQ (Mumbai ↔ Pune) - Multiple daily flights
+      const bomPnqRoute = findRouteByCodes('BOM', 'PNQ');
+      const pnqBomRoute = findRouteByCodes('PNQ', 'BOM');
+      
+      if (bomPnqRoute && schedules.length > 4) {
+        flightsData.push({
+          flightNumber: '6E601',
+          routeId: bomPnqRoute.id,
+          scheduleId: schedules[4].id, // Early morning
+          aircraftId: aircrafts[5].id,
+          departureDate: flightDate,
+          gateId: getGateForAirport('BOM'),
+          status: FlightStatus.SCHEDULED,
+        });
+      }
+
+      if (pnqBomRoute && schedules.length > 5) {
+        flightsData.push({
+          flightNumber: '6E602',
+          routeId: pnqBomRoute.id,
+          scheduleId: schedules[5].id, // Midday
+          aircraftId: aircrafts[5].id,
+          departureDate: flightDate,
+          gateId: getGateForAirport('PNQ'),
+          status: FlightStatus.SCHEDULED,
+        });
+      }
+
+      // DEL ↔ IXC (Delhi ↔ Chandigarh)
+      const delIxcRoute = findRouteByCodes('DEL', 'IXC');
+      const ixcDelRoute = findRouteByCodes('IXC', 'DEL');
+      
+      if (delIxcRoute && schedules.length > 6) {
+        flightsData.push({
+          flightNumber: 'AI301',
+          routeId: delIxcRoute.id,
+          scheduleId: schedules[6].id, // Morning
+          aircraftId: aircrafts[5].id,
+          departureDate: flightDate,
+          gateId: getGateForAirport('DEL'),
+          status: FlightStatus.SCHEDULED,
+        });
+      }
+
+      if (ixcDelRoute && schedules.length > 7) {
+        flightsData.push({
+          flightNumber: 'AI302',
+          routeId: ixcDelRoute.id,
+          scheduleId: schedules[7].id, // Midday
+          aircraftId: aircrafts[5].id,
+          departureDate: flightDate,
+          gateId: getGateForAirport('IXC'),
+          status: FlightStatus.SCHEDULED,
+        });
+      }
+
+      // BLR ↔ COK (Bangalore ↔ Kochi)
+      const blrCokRoute = findRouteByCodes('BLR', 'COK');
+      const cokBlrRoute = findRouteByCodes('COK', 'BLR');
+      
+      if (blrCokRoute && day % 2 === 0) {
+        flightsData.push({
+          flightNumber: '6E701',
+          routeId: blrCokRoute.id,
+          scheduleId: schedules[1].id,
+          aircraftId: aircrafts[2].id,
+          departureDate: flightDate,
+          gateId: getGateForAirport('BLR'),
+          status: FlightStatus.SCHEDULED,
+        });
+      }
+
+      if (cokBlrRoute && day % 2 === 0) {
+        flightsData.push({
+          flightNumber: '6E702',
+          routeId: cokBlrRoute.id,
+          scheduleId: schedules[3].id,
+          aircraftId: aircrafts[2].id,
+          departureDate: flightDate,
+          gateId: getGateForAirport('COK'),
+          status: FlightStatus.SCHEDULED,
+        });
+      }
+
+      // BOM ↔ AMD (Mumbai ↔ Ahmedabad)
+      const bomAmdRoute = findRouteByCodes('BOM', 'AMD');
+      const amdBomRoute = findRouteByCodes('AMD', 'BOM');
+      
+      if (bomAmdRoute) {
+        flightsData.push({
+          flightNumber: '6E801',
+          routeId: bomAmdRoute.id,
+          scheduleId: schedules[2].id,
+          aircraftId: aircrafts[3].id,
+          departureDate: flightDate,
+          gateId: getGateForAirport('BOM'),
+          status: FlightStatus.SCHEDULED,
+        });
+      }
+
+      if (amdBomRoute) {
+        flightsData.push({
+          flightNumber: '6E802',
+          routeId: amdBomRoute.id,
+          scheduleId: schedules[0].id,
+          aircraftId: aircrafts[3].id,
+          departureDate: flightDate,
+          gateId: getGateForAirport('AMD'),
+          status: FlightStatus.SCHEDULED,
+        });
+      }
+
+      // DEL ↔ AMD (Delhi ↔ Ahmedabad)
+      const delAmdRoute = findRouteByCodes('DEL', 'AMD');
+      const amdDelRoute = findRouteByCodes('AMD', 'DEL');
+      
+      if (delAmdRoute && (dayOfWeek === 1 || dayOfWeek === 3 || dayOfWeek === 5)) {
+        flightsData.push({
+          flightNumber: 'AI401',
+          routeId: delAmdRoute.id,
+          scheduleId: schedules[1].id,
+          aircraftId: aircrafts[1].id,
+          departureDate: flightDate,
+          gateId: getGateForAirport('DEL'),
+          status: FlightStatus.SCHEDULED,
+        });
+      }
+
+      if (amdDelRoute && (dayOfWeek === 1 || dayOfWeek === 3 || dayOfWeek === 5)) {
+        flightsData.push({
+          flightNumber: 'AI402',
+          routeId: amdDelRoute.id,
+          scheduleId: schedules[3].id,
+          aircraftId: aircrafts[1].id,
+          departureDate: flightDate,
+          gateId: getGateForAirport('AMD'),
+          status: FlightStatus.SCHEDULED,
+        });
+      }
     }
 
     const flights: Flight[] = [];
@@ -965,6 +1301,32 @@ export class SeederService {
       });
 
       if (!existingFlight) {
+        // Create flights with different availability levels for testing
+        // Some flights fully booked, some partially booked, some empty
+        let bookedSeats = 0;
+        const randomFactor = Math.random();
+        
+        // 20% of flights are fully booked (80-100% booked)
+        if (randomFactor < 0.2) {
+          bookedSeats = Math.floor(totalSeats * (0.8 + Math.random() * 0.2));
+        }
+        // 30% of flights are partially booked (30-80% booked)
+        else if (randomFactor < 0.5) {
+          bookedSeats = Math.floor(totalSeats * (0.3 + Math.random() * 0.5));
+        }
+        // 30% of flights are lightly booked (10-30% booked)
+        else if (randomFactor < 0.8) {
+          bookedSeats = Math.floor(totalSeats * (0.1 + Math.random() * 0.2));
+        }
+        // 20% of flights are empty (0-10% booked)
+        else {
+          bookedSeats = Math.floor(totalSeats * Math.random() * 0.1);
+        }
+        
+        // Ensure bookedSeats doesn't exceed totalSeats
+        bookedSeats = Math.min(bookedSeats, totalSeats);
+        const availableSeats = totalSeats - bookedSeats;
+
         const newFlight = this.flightRepository.create({
           flightNumber: data.flightNumber,
           routeId: data.routeId,
@@ -975,8 +1337,8 @@ export class SeederService {
           scheduledArrivalTime,
           gateId: data.gateId,
           status: data.status,
-          availableSeats: totalSeats,
-          bookedSeats: 0,
+          availableSeats,
+          bookedSeats,
         });
         const savedFlight = await this.flightRepository.save(newFlight);
         flights.push(savedFlight);
@@ -1526,8 +1888,8 @@ export class SeederService {
       [FareClass.FIRST]: { min: 50000, max: 100000 },
     };
 
-    // Process a subset of flights (up to 50) to avoid too many fares
-    const flightsToProcess = flights.slice(0, Math.min(50, flights.length));
+    // Process more flights for better search testing (up to 200)
+    const flightsToProcess = flights.slice(0, Math.min(200, flights.length));
 
     for (const flight of flightsToProcess) {
       // Get aircraft and seat configuration
@@ -1572,18 +1934,40 @@ export class SeederService {
           continue;
         }
 
-        // Calculate base fare
+        // Available seats for this class
+        const totalSeatsForClass = seatConfig.seatCountByClass[classConfig.class];
+        
+        // Get actual booked seats from flight
+        const flightBookedSeats = flight.bookedSeats || 0;
+        const flightTotalSeats = flight.availableSeats + flightBookedSeats;
+        
+        // Calculate booked seats for this class proportionally
+        // If flight has booked seats, distribute them across classes
+        let bookedSeatsForClass = 0;
+        if (flightBookedSeats > 0 && flightTotalSeats > 0) {
+          // Proportion of this class seats to total seats
+          const classProportion = totalSeatsForClass / flightTotalSeats;
+          bookedSeatsForClass = Math.floor(flightBookedSeats * classProportion);
+          // Add some randomness (within 20% of calculated value)
+          const variation = Math.floor(bookedSeatsForClass * 0.2 * (Math.random() - 0.5));
+          bookedSeatsForClass = Math.max(0, Math.min(totalSeatsForClass, bookedSeatsForClass + variation));
+        } else {
+          // If flight is empty, still add some random bookings (0-20% of class seats)
+          bookedSeatsForClass = Math.floor(totalSeatsForClass * Math.random() * 0.2);
+        }
+        
+        const availableSeatsForClass = totalSeatsForClass - bookedSeatsForClass;
+        
+        // Calculate base fare with more variation
         const fareRange = baseFaresByClass[fareClass];
         const baseFare = fareRange.min + Math.random() * (fareRange.max - fareRange.min);
 
-        // Dynamic price adjustment based on demand (0-20% increase)
-        const dynamicAdjustment = baseFare * (Math.random() * 0.2);
+        // Dynamic price adjustment based on demand and availability
+        // Higher prices when fewer seats available (0-30% increase)
+        const availabilityRatio = availableSeatsForClass / totalSeatsForClass;
+        const demandMultiplier = 1 - availabilityRatio; // Higher when fewer seats
+        const dynamicAdjustment = baseFare * (demandMultiplier * 0.3);
         const totalFare = baseFare + dynamicAdjustment;
-
-        // Available seats for this class
-        const totalSeatsForClass = seatConfig.seatCountByClass[classConfig.class];
-        const bookedSeatsForClass = Math.floor(totalSeatsForClass * Math.random() * 0.3); // 0-30% booked
-        const availableSeatsForClass = totalSeatsForClass - bookedSeatsForClass;
 
         const fare = this.fareRepository.create({
           flightId: flight.id,

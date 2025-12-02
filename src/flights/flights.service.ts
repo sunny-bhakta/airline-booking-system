@@ -173,9 +173,6 @@ export class FlightsService {
       },
     });
 
-    console.log(route);
-    console.log(".........................")
-
     if (!route) {
       return { flights: [], total: 0, page, limit };
     }
