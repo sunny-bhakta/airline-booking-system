@@ -19,15 +19,21 @@ import {
   ApiBody,
 } from '@nestjs/swagger';
 import { FlightsService } from './flights.service';
+import { SearchAvailabilityService } from './services/search-availability.service';
 import { CreateFlightDto } from './dto/create-flight.dto';
 import { UpdateFlightDto } from './dto/update-flight.dto';
 import { SearchFlightsDto } from './dto/search-flights.dto';
+import { AdvancedSearchFlightsDto } from './dto/advanced-search-flights.dto';
+import { CheckAvailabilityDto } from './dto/check-availability.dto';
 import { FlightStatus } from './entities/flight.entity';
 
 @ApiTags('flights')
 @Controller('flights')
 export class FlightsController {
-  constructor(private readonly flightsService: FlightsService) {}
+  constructor(
+    private readonly flightsService: FlightsService,
+    private readonly searchAvailabilityService: SearchAvailabilityService,
+  ) {}
 
   @Post()
   @HttpCode(HttpStatus.CREATED)
@@ -60,6 +66,76 @@ export class FlightsController {
   @ApiQuery({ name: 'limit', required: false, description: 'Items per page', type: Number })
   search(@Query() searchFlightsDto: SearchFlightsDto) {
     return this.flightsService.search(searchFlightsDto);
+  }
+
+  @Get('search/advanced')
+  @ApiOperation({ summary: 'Advanced flight search with filters (price, time, duration, aircraft, etc.)' })
+  @ApiResponse({ status: 200, description: 'Advanced search results with pagination' })
+  @ApiResponse({ status: 400, description: 'Invalid search parameters' })
+  advancedSearch(@Query() searchDto: AdvancedSearchFlightsDto) {
+    return this.searchAvailabilityService.advancedSearch(searchDto);
+  }
+
+  @Post('search/multi-city')
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({ summary: 'Multi-city flight search' })
+  @ApiResponse({ status: 200, description: 'Multi-city search results' })
+  @ApiBody({ 
+    schema: {
+      type: 'object',
+      properties: {
+        segments: {
+          type: 'array',
+          items: {
+            type: 'object',
+            properties: {
+              origin: { type: 'string' },
+              destination: { type: 'string' },
+              departureDate: { type: 'string' },
+            },
+          },
+        },
+        passengers: { type: 'number' },
+        page: { type: 'number' },
+        limit: { type: 'number' },
+      },
+    },
+  })
+  multiCitySearch(@Body() body: { segments: any[]; [key: string]: any }) {
+    const { segments, ...searchDto } = body;
+    return this.searchAvailabilityService.multiCitySearch(segments, searchDto as AdvancedSearchFlightsDto);
+  }
+
+  @Post('availability/check')
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({ summary: 'Check real-time seat availability for a flight' })
+  @ApiResponse({ status: 200, description: 'Availability information' })
+  @ApiResponse({ status: 404, description: 'Flight not found' })
+  @ApiBody({ type: CheckAvailabilityDto })
+  checkAvailability(@Body() checkDto: CheckAvailabilityDto) {
+    return this.searchAvailabilityService.checkAvailability(checkDto);
+  }
+
+  @Post('availability/check-multiple')
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({ summary: 'Check availability for multiple flights' })
+  @ApiResponse({ status: 200, description: 'Availability information for multiple flights' })
+  @ApiBody({
+    schema: {
+      type: 'object',
+      properties: {
+        flightIds: { type: 'array', items: { type: 'string' } },
+        passengers: { type: 'number' },
+        fareClass: { type: 'string', enum: ['Economy', 'Premium Economy', 'Business', 'First'] },
+      },
+    },
+  })
+  checkMultipleAvailability(@Body() body: { flightIds: string[]; passengers: number; fareClass?: string }) {
+    return this.searchAvailabilityService.checkMultipleAvailability(
+      body.flightIds,
+      body.passengers,
+      body.fareClass as any,
+    );
   }
 
   @Get('status/:status')
