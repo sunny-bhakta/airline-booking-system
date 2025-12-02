@@ -13,6 +13,13 @@ import {
 } from '../../flights/entities';
 import { Booking, Passenger, Ticket, SeatAssignment } from '../../bookings/entities';
 import { Fare, FareRule, TaxFee, PromotionalCode } from '../../pricing/entities';
+import {
+  User,
+  UserProfile,
+  PaymentMethod,
+  TravelPreference,
+  LoyaltyMembership,
+} from '../../users/entities';
 
 @Module({
   imports: [
@@ -33,6 +40,11 @@ import { Fare, FareRule, TaxFee, PromotionalCode } from '../../pricing/entities'
       FareRule,
       TaxFee,
       PromotionalCode,
+      User,
+      UserProfile,
+      PaymentMethod,
+      TravelPreference,
+      LoyaltyMembership,
     ]),
   ],
   providers: [SeederService],

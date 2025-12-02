@@ -17,6 +17,12 @@ import { Fare, FareClass } from '../../pricing/entities/fare.entity';
 import { FareRule } from '../../pricing/entities/fare-rule.entity';
 import { TaxFee, TaxFeeType, TaxFeeCalculationType } from '../../pricing/entities/tax-fee.entity';
 import { PromotionalCode, PromotionalCodeType, PromotionalCodeStatus } from '../../pricing/entities/promotional-code.entity';
+import { User, UserRole, UserStatus } from '../../users/entities/user.entity';
+import { UserProfile } from '../../users/entities/user-profile.entity';
+import { PaymentMethod, PaymentMethodType } from '../../users/entities/payment-method.entity';
+import { TravelPreference, SeatPreference, MealPreference } from '../../users/entities/travel-preference.entity';
+import { LoyaltyMembership, LoyaltyTier } from '../../users/entities/loyalty-membership.entity';
+import * as crypto from 'crypto';
 
 @Injectable()
 export class SeederService {
@@ -53,7 +59,24 @@ export class SeederService {
     private readonly taxFeeRepository: Repository<TaxFee>,
     @InjectRepository(PromotionalCode)
     private readonly promotionalCodeRepository: Repository<PromotionalCode>,
+    @InjectRepository(User)
+    private readonly userRepository: Repository<User>,
+    @InjectRepository(UserProfile)
+    private readonly userProfileRepository: Repository<UserProfile>,
+    @InjectRepository(PaymentMethod)
+    private readonly paymentMethodRepository: Repository<PaymentMethod>,
+    @InjectRepository(TravelPreference)
+    private readonly travelPreferenceRepository: Repository<TravelPreference>,
+    @InjectRepository(LoyaltyMembership)
+    private readonly loyaltyMembershipRepository: Repository<LoyaltyMembership>,
   ) {}
+
+  /**
+   * Hash password using SHA-256 (same as in users.service.ts)
+   */
+  private hashPassword(password: string): string {
+    return crypto.createHash('sha256').update(password).digest('hex');
+  }
 
   async seedAll() {
     console.log('🌱 Starting database seeding...\n');
@@ -73,6 +96,11 @@ export class SeederService {
     const fares = await this.seedFares(flights, routes, seatConfigs);
     const fareRules = await this.seedFareRules(fares);
     const taxFees = await this.seedTaxFees(fares);
+    const users = await this.seedUsers();
+    const userProfiles = await this.seedUserProfiles(users);
+    const paymentMethods = await this.seedPaymentMethods(users);
+    const travelPreferences = await this.seedTravelPreferences(users);
+    const loyaltyMemberships = await this.seedLoyaltyMemberships(users);
 
     console.log('\n✅ Database seeding completed!');
     console.log(`   - ${airports.length} Airports`);
@@ -90,6 +118,11 @@ export class SeederService {
     console.log(`   - ${fares.length} Fares`);
     console.log(`   - ${fareRules.length} Fare Rules`);
     console.log(`   - ${taxFees.length} Tax Fees`);
+    console.log(`   - ${users.length} Users`);
+    console.log(`   - ${userProfiles.length} User Profiles`);
+    console.log(`   - ${paymentMethods.length} Payment Methods`);
+    console.log(`   - ${travelPreferences.length} Travel Preferences`);
+    console.log(`   - ${loyaltyMemberships.length} Loyalty Memberships`);
   }
 
   async seedAirports(): Promise<Airport[]> {
@@ -1802,8 +1835,344 @@ export class SeederService {
     return taxFees;
   }
 
+  async seedUsers(): Promise<User[]> {
+    console.log('👤 Seeding users...');
+    const usersData = [
+      {
+        username: 'admin',
+        email: 'admin@airline.com',
+        password: this.hashPassword('admin123'),
+        role: UserRole.ADMIN,
+        status: UserStatus.ACTIVE,
+        isEmailVerified: true,
+      },
+      {
+        username: 'john_doe',
+        email: 'john.doe@example.com',
+        password: this.hashPassword('password123'),
+        role: UserRole.REGISTERED_USER,
+        status: UserStatus.ACTIVE,
+        isEmailVerified: true,
+      },
+      {
+        username: 'jane_smith',
+        email: 'jane.smith@example.com',
+        password: this.hashPassword('password123'),
+        role: UserRole.REGISTERED_USER,
+        status: UserStatus.ACTIVE,
+        isEmailVerified: true,
+      },
+      {
+        username: 'staff1',
+        email: 'staff1@airline.com',
+        password: this.hashPassword('staff123'),
+        role: UserRole.AIRLINE_STAFF,
+        status: UserStatus.ACTIVE,
+        isEmailVerified: true,
+      },
+      {
+        username: 'agent1',
+        email: 'agent1@travel.com',
+        password: this.hashPassword('agent123'),
+        role: UserRole.TRAVEL_AGENT,
+        status: UserStatus.ACTIVE,
+        isEmailVerified: true,
+      },
+      {
+        username: 'customer1',
+        email: 'customer1@example.com',
+        password: this.hashPassword('password123'),
+        role: UserRole.CUSTOMER,
+        status: UserStatus.ACTIVE,
+        isEmailVerified: true,
+      },
+      {
+        username: 'pending_user',
+        email: 'pending@example.com',
+        password: this.hashPassword('password123'),
+        role: UserRole.REGISTERED_USER,
+        status: UserStatus.PENDING_VERIFICATION,
+        isEmailVerified: false,
+      },
+    ];
+
+    const users = await this.userRepository.save(usersData);
+    console.log(`   ✓ Created ${users.length} users`);
+    return users;
+  }
+
+  async seedUserProfiles(users: User[]): Promise<UserProfile[]> {
+    console.log('📋 Seeding user profiles...');
+    const profilesData = [
+      {
+        userId: users[0].id, // admin
+        firstName: 'Admin',
+        lastName: 'User',
+        phoneNumber: '+1-555-0100',
+        city: 'New York',
+        country: 'USA',
+      },
+      {
+        userId: users[1].id, // john_doe
+        firstName: 'John',
+        lastName: 'Doe',
+        dateOfBirth: new Date('1990-05-15'),
+        gender: 'Male',
+        phoneNumber: '+1-555-0101',
+        address: '123 Main Street',
+        city: 'New York',
+        state: 'NY',
+        country: 'USA',
+        postalCode: '10001',
+        nationality: 'American',
+        passportNumber: 'US123456789',
+        passportExpiryDate: new Date('2030-12-31'),
+        passportIssuingCountry: 'USA',
+        emergencyContactName: 'Jane Doe',
+        emergencyContactPhone: '+1-555-0102',
+      },
+      {
+        userId: users[2].id, // jane_smith
+        firstName: 'Jane',
+        lastName: 'Smith',
+        dateOfBirth: new Date('1985-08-20'),
+        gender: 'Female',
+        phoneNumber: '+1-555-0103',
+        address: '456 Oak Avenue',
+        city: 'Los Angeles',
+        state: 'CA',
+        country: 'USA',
+        postalCode: '90001',
+        nationality: 'American',
+        passportNumber: 'US987654321',
+        passportExpiryDate: new Date('2029-06-30'),
+        passportIssuingCountry: 'USA',
+        emergencyContactName: 'John Smith',
+        emergencyContactPhone: '+1-555-0104',
+        dietaryPreferences: 'Vegetarian',
+      },
+      {
+        userId: users[3].id, // staff1
+        firstName: 'Staff',
+        lastName: 'Member',
+        phoneNumber: '+1-555-0105',
+        city: 'Chicago',
+        country: 'USA',
+      },
+      {
+        userId: users[4].id, // agent1
+        firstName: 'Travel',
+        lastName: 'Agent',
+        phoneNumber: '+1-555-0106',
+        city: 'Miami',
+        country: 'USA',
+      },
+      {
+        userId: users[5].id, // customer1
+        firstName: 'Customer',
+        lastName: 'One',
+        dateOfBirth: new Date('1995-03-10'),
+        gender: 'Other',
+        phoneNumber: '+1-555-0107',
+        city: 'Seattle',
+        country: 'USA',
+      },
+    ];
+
+    const profiles = await this.userProfileRepository.save(profilesData);
+    console.log(`   ✓ Created ${profiles.length} user profiles`);
+    return profiles;
+  }
+
+  async seedPaymentMethods(users: User[]): Promise<PaymentMethod[]> {
+    console.log('💳 Seeding payment methods...');
+    const paymentMethodsData = [
+      {
+        userId: users[1].id, // john_doe
+        type: PaymentMethodType.CREDIT_CARD,
+        cardHolderName: 'John Doe',
+        lastFourDigits: '1234',
+        cardBrand: 'Visa',
+        expiryDate: new Date('2025-12-31'),
+        isDefault: true,
+        isActive: true,
+        billingAddress: '123 Main Street, New York, NY 10001',
+      },
+      {
+        userId: users[1].id, // john_doe
+        type: PaymentMethodType.DEBIT_CARD,
+        cardHolderName: 'John Doe',
+        lastFourDigits: '5678',
+        cardBrand: 'Mastercard',
+        expiryDate: new Date('2026-06-30'),
+        isDefault: false,
+        isActive: true,
+        billingAddress: '123 Main Street, New York, NY 10001',
+      },
+      {
+        userId: users[2].id, // jane_smith
+        type: PaymentMethodType.CREDIT_CARD,
+        cardHolderName: 'Jane Smith',
+        lastFourDigits: '9012',
+        cardBrand: 'American Express',
+        expiryDate: new Date('2027-03-31'),
+        isDefault: true,
+        isActive: true,
+        billingAddress: '456 Oak Avenue, Los Angeles, CA 90001',
+      },
+      {
+        userId: users[2].id, // jane_smith
+        type: PaymentMethodType.DIGITAL_WALLET,
+        walletProvider: 'PayPal',
+        isDefault: false,
+        isActive: true,
+      },
+      {
+        userId: users[5].id, // customer1
+        type: PaymentMethodType.UPI,
+        accountNumber: 'customer1@paytm',
+        isDefault: true,
+        isActive: true,
+      },
+    ];
+
+    const paymentMethods = await this.paymentMethodRepository.save(paymentMethodsData);
+    console.log(`   ✓ Created ${paymentMethods.length} payment methods`);
+    return paymentMethods;
+  }
+
+  async seedTravelPreferences(users: User[]): Promise<TravelPreference[]> {
+    console.log('✈️  Seeding travel preferences...');
+    const preferencesData = [
+      {
+        userId: users[1].id, // john_doe
+        seatPreference: SeatPreference.WINDOW,
+        mealPreference: MealPreference.NO_PREFERENCE,
+        prefersWindowSeat: true,
+        prefersAisleSeat: false,
+        prefersExitRow: false,
+        needsSpecialAssistance: false,
+        prefersPriorityBoarding: true,
+        prefersLoungeAccess: false,
+        preferredAirline: 'Airline Name',
+        travelClassPreference: 'Business',
+      },
+      {
+        userId: users[2].id, // jane_smith
+        seatPreference: SeatPreference.AISLE,
+        mealPreference: MealPreference.VEGETARIAN,
+        prefersWindowSeat: false,
+        prefersAisleSeat: true,
+        prefersExitRow: false,
+        needsSpecialAssistance: false,
+        prefersPriorityBoarding: true,
+        prefersLoungeAccess: true,
+        preferredAirline: 'Preferred Airline',
+        travelClassPreference: 'First',
+      },
+      {
+        userId: users[5].id, // customer1
+        seatPreference: SeatPreference.NO_PREFERENCE,
+        mealPreference: MealPreference.GLUTEN_FREE,
+        prefersWindowSeat: false,
+        prefersAisleSeat: false,
+        prefersExitRow: true,
+        needsSpecialAssistance: true,
+        specialAssistanceDetails: 'Wheelchair assistance required',
+        prefersPriorityBoarding: true,
+        prefersLoungeAccess: false,
+        travelClassPreference: 'Economy',
+      },
+    ];
+
+    const preferences = await this.travelPreferenceRepository.save(preferencesData);
+    console.log(`   ✓ Created ${preferences.length} travel preferences`);
+    return preferences;
+  }
+
+  async seedLoyaltyMemberships(users: User[]): Promise<LoyaltyMembership[]> {
+    console.log('🎖️  Seeding loyalty memberships...');
+    const membershipsData = [
+      {
+        userId: users[1].id, // john_doe
+        programName: 'SkyMiles',
+        membershipNumber: 'DL123456789',
+        tier: LoyaltyTier.GOLD,
+        miles: 75000,
+        points: 37500,
+        tierExpiryDate: new Date('2025-12-31'),
+        tierMilesRequired: 25000,
+        isActive: true,
+        benefits: JSON.stringify({
+          priorityBoarding: true,
+          loungeAccess: true,
+          extraBaggage: '2 bags free',
+          seatUpgrade: 'Complimentary upgrades available',
+        }),
+      },
+      {
+        userId: users[1].id, // john_doe
+        programName: 'AAdvantage',
+        membershipNumber: 'AA987654321',
+        tier: LoyaltyTier.SILVER,
+        miles: 35000,
+        points: 17500,
+        tierExpiryDate: new Date('2025-06-30'),
+        tierMilesRequired: 15000,
+        isActive: true,
+        benefits: JSON.stringify({
+          priorityBoarding: true,
+          loungeAccess: false,
+          extraBaggage: '1 bag free',
+        }),
+      },
+      {
+        userId: users[2].id, // jane_smith
+        programName: 'SkyMiles',
+        membershipNumber: 'DL987654321',
+        tier: LoyaltyTier.PLATINUM,
+        miles: 150000,
+        points: 75000,
+        tierExpiryDate: new Date('2026-12-31'),
+        tierMilesRequired: 0,
+        isActive: true,
+        benefits: JSON.stringify({
+          priorityBoarding: true,
+          loungeAccess: true,
+          extraBaggage: '3 bags free',
+          seatUpgrade: 'Complimentary upgrades available',
+          conciergeService: true,
+        }),
+      },
+      {
+        userId: users[5].id, // customer1
+        programName: 'Miles & More',
+        membershipNumber: 'LH123456789',
+        tier: LoyaltyTier.BRONZE,
+        miles: 5000,
+        points: 2500,
+        tierExpiryDate: new Date('2024-12-31'),
+        tierMilesRequired: 45000,
+        isActive: true,
+        benefits: JSON.stringify({
+          priorityBoarding: false,
+          loungeAccess: false,
+        }),
+      },
+    ];
+
+    const memberships = await this.loyaltyMembershipRepository.save(membershipsData);
+    console.log(`   ✓ Created ${memberships.length} loyalty memberships`);
+    return memberships;
+  }
+
   async clearAll() {
     console.log('🗑️  Clearing all data...');
+    await this.loyaltyMembershipRepository.delete({});
+    await this.travelPreferenceRepository.delete({});
+    await this.paymentMethodRepository.delete({});
+    await this.userProfileRepository.delete({});
+    await this.userRepository.delete({});
     await this.seatAssignmentRepository.delete({});
     await this.ticketRepository.delete({});
     await this.taxFeeRepository.delete({});

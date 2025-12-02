@@ -10,6 +10,7 @@ import {
   UpdateDateColumn,
 } from 'typeorm';
 import { Flight } from '../../flights/entities/flight.entity';
+import { User } from '../../users/entities/user.entity';
 import { Passenger } from './passenger.entity';
 import { Ticket } from './ticket.entity';
 import { SeatAssignment } from './seat-assignment.entity';
@@ -24,6 +25,7 @@ export enum BookingStatus {
 @Entity('bookings')
 @Index(['pnr'], { unique: true })
 @Index(['flightId', 'status'])
+@Index(['userId', 'bookingDate'])
 export class Booking {
   @PrimaryGeneratedColumn('uuid')
   id: string;
@@ -37,6 +39,13 @@ export class Booking {
   @ManyToOne(() => Flight, { eager: true })
   @JoinColumn({ name: 'flightId' })
   flight: Flight;
+
+  @Column({ type: 'uuid', nullable: true })
+  userId: string; // Optional - allows guest bookings
+
+  @ManyToOne(() => User, { nullable: true })
+  @JoinColumn({ name: 'userId' })
+  user: User;
 
   @Column({
     type: 'varchar',

@@ -13,6 +13,10 @@ import { CreatePassengerDto } from './create-passenger.dto';
 
 export class CreateBookingDto {
   @IsUUID()
+  @IsOptional()
+  userId?: string; // Optional - for guest bookings
+
+  @IsUUID()
   flightId: string;
 
   @IsArray()

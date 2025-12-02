@@ -76,6 +76,7 @@ export class BookingsController {
   @ApiOperation({ summary: 'Search bookings with filters' })
   @ApiResponse({ status: 200, description: 'Search results with pagination' })
   @ApiQuery({ name: 'pnr', required: false, description: 'PNR code' })
+  @ApiQuery({ name: 'userId', required: false, description: 'User UUID' })
   @ApiQuery({ name: 'flightId', required: false, description: 'Flight UUID' })
   @ApiQuery({
     name: 'status',
@@ -97,6 +98,15 @@ export class BookingsController {
   @ApiQuery({ name: 'limit', required: false, description: 'Items per page' })
   search(@Query() searchBookingsDto: SearchBookingsDto) {
     return this.bookingsService.search(searchBookingsDto);
+  }
+
+  @Get('user/:userId')
+  @ApiOperation({ summary: 'Get bookings by user ID' })
+  @ApiParam({ name: 'userId', description: 'User UUID' })
+  @ApiResponse({ status: 200, description: 'List of bookings for the user' })
+  @ApiResponse({ status: 404, description: 'User not found' })
+  findByUserId(@Param('userId') userId: string) {
+    return this.bookingsService.findByUserId(userId);
   }
 
   @Get('status/:status')
