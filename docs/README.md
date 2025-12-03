@@ -25,6 +25,24 @@ Welcome to the Airline Booking System documentation. This index provides an over
   - Seat assignment, status transitions
   - Complete API reference and examples
 
+- **[Booking Flow Implementation](07-booking-flow-implementation.md)**
+  - Complete end-to-end booking flow guide (Section 4)
+  - Step-by-step booking process from search to confirmation
+  - API reference with request/response examples
+  - Status management and transitions
+  - PNR and ticket generation details
+  - Seat assignment workflow
+  - Error handling and best practices
+
+- **[Payment & Billing Implementation](08-payment-billing-implementation.md)**
+  - Complete payment and billing system guide (Section 5)
+  - Payment processing with multiple payment methods
+  - Transaction management and tracking
+  - Invoice and receipt generation
+  - Refund processing (full and partial)
+  - Payment gateway integration (ready for production)
+  - Complete API reference and examples
+
 ### Setup & Configuration
 
 - **[Seeding Guide](SEEDING-GUIDE.md)**
@@ -39,8 +57,8 @@ Welcome to the Airline Booking System documentation. This index provides an over
 
 ## 🚀 Quick Start
 
-1. **Read the Concepts:** Start with [Airline Booking Concepts](airline-booking-concepts.md) to understand the domain
-2. **Review Implementation:** Check [Flight Management](flight-management-implementation.md) and [Booking Management](booking-management-implementation.md) guides
+1. **Read the Concepts:** Start with [Airline Booking Concepts](00-airline-booking-concepts.md) to understand the domain
+2. **Review Implementation:** Check [Flight Management](01-flight-management-implementation.md), [Booking Management](03-booking-management-implementation.md), [Booking Flow](07-booking-flow-implementation.md), and [Payment & Billing](08-payment-billing-implementation.md) guides
 3. **Set Up Database:** Follow [Seeding Guide](SEEDING-GUIDE.md) to populate test data
 4. **Test API:** Use [API Testing Guide](API-TESTING-GUIDE.md) to explore endpoints
 
@@ -61,6 +79,13 @@ Welcome to the Airline Booking System documentation. This index provides an over
   - Seat assignment
   - Booking status workflow
 
+- **Payment & Billing** (Section 5)
+  - Payment processing (cards, digital wallets, UPI, bank transfer)
+  - Transaction management
+  - Invoice and receipt generation
+  - Refund processing (full and partial)
+  - Payment gateway integration ready
+
 ### 🚧 Planned
 
 - **Pricing & Fare** (Section 1.4)
@@ -80,10 +105,12 @@ Welcome to the Airline Booking System documentation. This index provides an over
 - Flight status: [Flight Management](flight-management-implementation.md#status-management)
 
 **Booking Operations:**
-- Creating bookings: [Booking Management](booking-management-implementation.md#booking-creation)
-- PNR lookup: [Booking Management](booking-management-implementation.md#pnr-lookup)
-- Seat assignment: [Booking Management](booking-management-implementation.md#seat-assignment)
-- Ticket generation: [Booking Management](booking-management-implementation.md#booking-confirmation)
+- Complete booking flow: [Booking Flow](07-booking-flow-implementation.md)
+- Creating bookings: [Booking Flow](07-booking-flow-implementation.md#step-2-create-booking) or [Booking Management](03-booking-management-implementation.md#booking-creation)
+- PNR lookup: [Booking Flow](07-booking-flow-implementation.md#retrieve-booking) or [Booking Management](03-booking-management-implementation.md#pnr-lookup)
+- Seat assignment: [Booking Flow](07-booking-flow-implementation.md#seat-assignment) or [Booking Management](03-booking-management-implementation.md#seat-assignment)
+- Ticket generation: [Booking Flow](07-booking-flow-implementation.md#pnr--ticket-generation) or [Booking Management](03-booking-management-implementation.md#booking-confirmation)
+- Status management: [Booking Flow](07-booking-flow-implementation.md#status-management)
 
 **Database:**
 - Seeding data: [Seeding Guide](SEEDING-GUIDE.md)
@@ -101,7 +128,9 @@ Welcome to the Airline Booking System documentation. This index provides an over
 - **Set up the project:** Read [Seeding Guide](SEEDING-GUIDE.md) and main [README](../README.md)
 - **Understand the domain:** Read [Airline Booking Concepts](airline-booking-concepts.md)
 - **Create a flight:** See [Flight Management](flight-management-implementation.md#example-requests)
-- **Create a booking:** See [Booking Management](booking-management-implementation.md#usage-example)
+- **Create a booking:** See [Booking Flow](07-booking-flow-implementation.md#complete-examples) or [Booking Management](03-booking-management-implementation.md#usage-example)
+- **Process payment:** See [Payment & Billing](08-payment-billing-implementation.md#complete-examples)
+- **Process refund:** See [Payment & Billing](08-payment-billing-implementation.md#refund-processing)
 - **Test the API:** See [API Testing Guide](API-TESTING-GUIDE.md)
 - **Understand entities:** See entity sections in implementation guides
 - **See API endpoints:** See API Endpoints sections in implementation guides
@@ -110,9 +139,11 @@ Welcome to the Airline Booking System documentation. This index provides an over
 
 | Document | Purpose | Audience |
 |----------|---------|----------|
-| [Airline Booking Concepts](airline-booking-concepts.md) | Reference for all concepts | All |
-| [Flight Management](flight-management-implementation.md) | Flight module implementation | Developers |
-| [Booking Management](booking-management-implementation.md) | Booking module implementation | Developers |
+| [Airline Booking Concepts](00-airline-booking-concepts.md) | Reference for all concepts | All |
+| [Flight Management](01-flight-management-implementation.md) | Flight module implementation | Developers |
+| [Booking Management](03-booking-management-implementation.md) | Booking module implementation | Developers |
+| [Booking Flow](07-booking-flow-implementation.md) | End-to-end booking process | Developers, QA |
+| [Payment & Billing](08-payment-billing-implementation.md) | Payment processing and billing | Developers, QA |
 | [Seeding Guide](SEEDING-GUIDE.md) | Database setup | Developers, QA |
 | [API Testing Guide](API-TESTING-GUIDE.md) | API testing methods | Developers, QA, Testers |
 
