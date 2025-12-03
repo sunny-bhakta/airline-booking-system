@@ -148,11 +148,21 @@
 
 ## 6. Ancillary Services
 
+> **📘 Implementation Guide**: For detailed ancillary services implementation, API reference, examples, and best practices, see [Ancillary Services Implementation Guide](09-ancillary-services-implementation.md).
+
 ### 6.1 Baggage
 - **Cabin Baggage**: Free allowance
 - **Checked Baggage**: Weight/size limits, pricing
 - **Excess Baggage**: Additional charges
 - **Special Baggage**: Sports equipment, pets, fragile items
+
+**Implementation Features:**
+- Baggage types: Cabin, Checked, Excess, Special
+- Special baggage categories: Sports equipment, pets, fragile items, musical instruments, wheelchairs, medical equipment
+- Weight and dimension tracking (length, width, height)
+- Quantity management (multiple pieces)
+- Pricing per baggage item
+- Booking-level or passenger-specific baggage assignment
 
 ### 6.2 In-Flight Services
 - **Meals**: Pre-order meals, special dietary requirements
@@ -161,11 +171,27 @@
 - **Priority Boarding**: Early boarding access
 - **Lounge Access**: Airport lounge passes
 
+**Implementation Features:**
+- Service types: Meals, Entertainment, Wi-Fi, Priority Boarding, Lounge Access, Extra Legroom
+- Meal types: Standard, Vegetarian, Vegan, Halal, Kosher, Gluten-free, Diabetic, Child, Infant
+- Quantity management (e.g., number of meals, hours of Wi-Fi)
+- Special requirements tracking (dietary preferences, etc.)
+- Booking-level or passenger-specific service assignment
+
 ### 6.3 Travel Insurance
 - Trip cancellation insurance
 - Medical insurance
 - Baggage insurance
 - Flight delay insurance
+
+**Implementation Features:**
+- Insurance types: Trip Cancellation, Medical, Baggage, Flight Delay, Comprehensive
+- Coverage amount and premium pricing
+- Policy number and provider tracking
+- Coverage period (start and end dates)
+- Insurance status: Active, Expired, Cancelled, Claimed
+- Terms and conditions storage
+- Booking-level or passenger-specific insurance assignment
 
 ## 7. Check-in & Boarding
 

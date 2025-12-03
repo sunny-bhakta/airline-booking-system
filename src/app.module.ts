@@ -6,6 +6,8 @@ import { FlightsModule } from './flights/flights.module';
 import { BookingsModule } from './bookings/bookings.module';
 import { PricingModule } from './pricing/pricing.module';
 import { UsersModule } from './users/users.module';
+import { PaymentsModule } from './payments/payments.module';
+import { AncillaryModule } from './ancillary/ancillary.module';
 import { SeedModule } from './database/seeders/seed.module';
 import { Flight } from './flights/entities/flight.entity';
 import { Route } from './flights/entities/route.entity';
@@ -23,6 +25,16 @@ import {
   TravelPreference,
   LoyaltyMembership,
 } from './users/entities';
+import {
+  PaymentTransaction,
+  Invoice,
+  Receipt,
+} from './payments/entities';
+import {
+  Baggage,
+  InFlightService,
+  TravelInsurance,
+} from './ancillary/entities';
 
 @Module({
   imports: [
@@ -51,6 +63,12 @@ import {
         PaymentMethod,
         TravelPreference,
         LoyaltyMembership,
+        PaymentTransaction,
+        Invoice,
+        Receipt,
+        Baggage,
+        InFlightService,
+        TravelInsurance,
       ],
       synchronize: true, // Set to false in production
       logging: true,
@@ -59,6 +77,8 @@ import {
     BookingsModule,
     PricingModule,
     UsersModule,
+    PaymentsModule,
+    AncillaryModule,
     SeedModule,
   ],
   controllers: [AppController],
