@@ -110,28 +110,41 @@
 
 ## 5. Payment & Billing
 
+> **📘 Implementation Guide**: For detailed payment & billing implementation, API reference, examples, and best practices, see [Payment & Billing Implementation Guide](08-payment-billing-implementation.md).
+
 ### 5.1 Payment Methods
-- Credit/Debit cards
-- Digital wallets (PayPal, Apple Pay, Google Pay)
-- Bank transfers
-- UPI/Net Banking
-- Cash (at airport)
-- Vouchers/Gift cards
+- **Credit/Debit Cards**: Visa, Mastercard, American Express, Discover
+- **Digital Wallets**: PayPal, Apple Pay, Google Pay, Samsung Pay
+- **Bank Transfers**: Direct bank transfer
+- **UPI/Net Banking**: UPI payments, net banking (India)
+- **Cash**: Payment at airport (future enhancement)
+- **Vouchers/Gift Cards**: Promotional vouchers and gift cards (future enhancement)
 
 ### 5.2 Payment Processing
-- Payment gateway integration
-- Transaction security (PCI DSS)
-- Payment authorization
-- Refund processing
-- Partial payments
-- Installment options
+- **Payment Gateway Integration**: Ready for Stripe, PayPal, Razorpay, Square, Adyen
+- **Transaction Security**: PCI DSS compliant design (with proper gateway integration)
+- **Payment Authorization**: Real-time payment authorization
+- **Transaction Management**: Complete transaction lifecycle tracking
+- **Payment Status**: PENDING → PROCESSING → COMPLETED/FAILED
+- **Idempotency**: Prevent duplicate charges
 
-### 5.3 Invoice & Receipt
-- Booking confirmation
-- E-ticket generation
-- Tax breakdown
-- Receipt/invoice PDF
-- Email delivery
+### 5.3 Refund Processing
+- **Full Refund**: Complete refund of payment amount
+- **Partial Refund**: Refund of partial amount
+- **Refund Status Tracking**: REFUNDED, PARTIALLY_REFUNDED
+- **Automatic Booking Cancellation**: Full refund cancels booking automatically
+- **Refund Reason Tracking**: Store reason for refunds
+
+### 5.4 Invoice & Receipt
+- **Automatic Invoice Generation**: Generated after successful payment
+- **Invoice Numbering**: Unique invoice numbers (INV-YYYY-NNNNNN)
+- **Tax Breakdown**: Detailed tax and fee breakdown
+- **Billing Information**: Complete billing address and contact details
+- **Automatic Receipt Generation**: Generated after successful payment
+- **Receipt Numbering**: Unique receipt numbers (RCP-YYYY-NNNNNN)
+- **Payment Method Display**: Clear payment method information
+- **Email Delivery**: Ready for email integration (future enhancement)
+- **PDF Generation**: Ready for PDF generation (future enhancement)
 
 ## 6. Ancillary Services
 
